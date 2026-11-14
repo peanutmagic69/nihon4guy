@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2027 日本4人自由行行程追踪器 (大阪・京都・东京)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans SC', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+        /* 自定义滚动条提升桌面端与移动端滑块质感 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .tab-active {
+            background-color: #0f172a;
+            color: #ffffff;
+        }
+        .status-confirmed {
+            background-color: #dcfce7;
+            color: #166534;
+            border-color: #bbf7d0;
+        }
+        .status-pending {
+            background-color: #fef3c7;
+            color: #92400e;
+            border-color: #fde68a;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-rose-100 selection:text-rose-900 pb-20">
+
+    <!-- 顶部导航与核心参数控制台 -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <div class="flex items-center gap-2.5 flex-wrap">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-800">
+                            🇯🇵 2027 关西进・关东出
+                        </span>
+                        <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
+                            日本4人自由行行程追踪器
+                        </h1>
+                    </div>
+                    <p class="text-xs sm:text-sm text-slate-500 mt-1" id="tripSubtitle">
+                        主代表：Kin Yip Lam ｜ 4人同行 ｜ 阪进东出・二次元与和牛之旅
+                    </p>
+                </div>
+
+                <!-- 全局参数快捷编辑栏 -->
+                <div class="flex flex-wrap items-center gap-2 sm:gap-3 bg-slate-50 p-2 rounded-xl border border-slate-200/80">
+                    <div class="flex items-center gap-1.5 px-2">
+                        <span class="text-xs text-slate-500">人数</span>
+                        <input type="number" id="globalPax" min="1" max="20" value="4" onchange="updateGlobalSettings()"
+                            class="w-12 text-center font-semibold text-sm bg-white border border-slate-300 rounded-lg py-1 focus:outline-none focus:ring-2 focus:ring-rose-500">
+                        <span class="text-xs text-slate-500">人</span>
+                    </div>
+                    <div class="h-4 w-px bg-slate-300"></div>
+                    <div class="flex items-center gap-1.5 px-2">
+                        <span class="text-xs text-slate-500">出发</span>
+                        <input type="date" id="globalStartDate" value="2027-01-17" onchange="updateGlobalSettings()"
+                            class="text-xs font-medium bg-white border border-slate-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-rose-500">
+                    </div>
+                    <div class="flex items-center gap-1.5 px-2">
+                        <span class="text-xs text-slate-500">返程</span>
+                        <input type="date" id="globalEndDate" value="2027-01-27" onchange="updateGlobalSettings()"
+                            class="text-xs font-medium bg-white border border-slate-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-rose-500">
+                    </div>
+                    <button onclick="resetToDefaultData()" title="恢复初始默认数据"
+                        class="ml-auto sm:ml-0 text-xs px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-600 border border-slate-300 transition">
+                        重置数据
+                    </button>
+                </div>
+            </div>
+
+            <!-- 顶部实时统计总览卡片 -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
+                <div class="bg-slate-50 rounded-xl p-3 border border-slate-200/70">
+                    <div class="text-xs text-slate-500 font-medium">总行程天数 / 酒店晚数</div>
+                    <div class="mt-1 flex items-baseline justify-between">
+                        <span class="text-lg sm:text-xl font-bold text-slate-900" id="statDuration">11天 8晚住宿</span>
+                        <span class="text-xs text-emerald-600 font-medium" id="statNightBus">+1晚夜巴</span>
+                    </div>
+                </div>
+                <div class="bg-slate-50 rounded-xl p-3 border border-slate-200/70">
+                    <div class="text-xs text-slate-500 font-medium">预订完成度 (已确认 / 总项)</div>
+                    <div class="mt-1 flex items-baseline justify-between">
+                        <span class="text-lg sm:text-xl font-bold text-slate-900" id="statBookingRatio">0 / 0</span>
+                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800" id="statPendingCount">0 项待确认</span>
+                    </div>
+                </div>
+                <div class="bg-slate-50 rounded-xl p-3 border border-slate-200/70">
+                    <div class="text-xs text-slate-500 font-medium">总预算估算 (4人合计 MYR)</div>
+                    <div class="mt-1 flex items-baseline justify-between">
+                        <span class="text-lg sm:text-xl font-bold text-rose-600" id="statTotalMYR">RM 0.00</span>
+                        <span class="text-xs text-slate-500" id="statTotalJPY">≈ ¥0</span>
+                    </div>
+                </div>
+                <div class="bg-slate-50 rounded-xl p-3 border border-slate-200/70">
+                    <div class="text-xs text-slate-500 font-medium">人均分摊预算 (<span id="statPaxLabel">4</span>人平摊)</div>
+                    <div class="mt-1 flex items-baseline justify-between">
+                        <span class="text-lg sm:text-xl font-bold text-slate-900" id="statPerPersonMYR">RM 0.00</span>
+                        <span class="text-xs text-slate-500" id="statPerPersonJPY">≈ ¥0 / 人</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 主视图切换 Tabs -->
+            <div class="flex items-center gap-2 mt-4 overflow-x-auto pb-1">
+                <button onclick="switchMainTab('itinerary')" id="tab-itinerary"
+                    class="tab-active px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition flex items-center gap-1.5">
+                    <span>📅 每日行程与城市切换</span>
+                </button>
+                <button onclick="switchMainTab('hotels')" id="tab-hotels"
+                    class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 whitespace-nowrap transition flex items-center gap-1.5">
+                    <span>🏨 住宿与预订管理</span>
+                </button>
+                <button onclick="switchMainTab('transport')" id="tab-transport"
+                    class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 whitespace-nowrap transition flex items-center gap-1.5">
+                    <span>🚄 交通方式与票券记录</span>
+                </button>
+                <button onclick="switchMainTab('budget')" id="tab-budget"
+                    class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 whitespace-nowrap transition flex items-center gap-1.5">
+                    <span>💰 预算明细与4人分摊</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区域 -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+
+        <!-- 1. 每日行程视图 -->
+        <section id="view-itinerary" class="space-y-6">
+            <!-- 城市快速筛选与日期选择器 -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">城市筛选：</span>
+                        <button onclick="filterCity('ALL')" class="city-filter-btn px-3 py-1 rounded-full text-xs font-semibold bg-slate-900 text-white" data-city="ALL">全部城市</button>
+                        <button onclick="filterCity('大阪')" class="city-filter-btn px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200" data-city="大阪">🏯 大阪 (1/18-20)</button>
+                        <button onclick="filterCity('京都')" class="city-filter-btn px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200" data-city="京都">⛩️ 京都 (1/20-22)</button>
+                        <button onclick="filterCity('夜巴移动')" class="city-filter-btn px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200" data-city="夜巴移动">🚌 夜巴跨城 (1/22)</button>
+                        <button onclick="filterCity('东京')" class="city-filter-btn px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200" data-city="东京">🗼 东京 (1/23-27)</button>
+                    </div>
+                    <button onclick="openActivityModal()" class="inline-flex items-center justify-center px-3.5 py-2 rounded-xl text-xs font-semibold bg-rose-600 text-white hover:bg-rose-700 transition shadow-sm">
+                        + 新增行程/餐食节点
+                    </button>
+                </div>
+
+                <!-- 横向日期快捷条 -->
+                <div id="daySelectorBar" class="flex gap-2 overflow-x-auto py-2">
+                    <!-- 动态生成日期卡片 -->
+                </div>
+            </div>
+
+            <!-- 每日详细行程卡片列表 -->
+            <div id="dailyCardsContainer" class="space-y-5">
+                <!-- 动态渲染每日行程 -->
+            </div>
+        </section>
+
+        <!-- 2. 住宿与预订管理视图 -->
+        <section id="view-hotels" class="hidden space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900">已确定 & 待确认住宿清单 (4人房型)</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">主入住代表：Kin Yip Lam ｜ 点击“编辑”可随时修改酒店名称、入住日期、房号或价格</p>
+                </div>
+                <button onclick="openHotelModal()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-900 text-white hover:bg-slate-800 transition">
+                    + 添加住宿记录
+                </button>
+            </div>
+
+            <div id="hotelsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- 动态渲染酒店卡片 -->
+            </div>
+        </section>
+
+        <!-- 3. 交通方式与票券记录视图 -->
+        <section id="view-transport" class="hidden space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900">跨城交通、航班与市区票券追踪</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">包含红眼航班、关西机场快线、京都→东京跨夜巴士、浅草→成田机场直达线等</p>
+                </div>
+                <button onclick="openTransportModal()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-900 text-white hover:bg-slate-800 transition">
+                    + 添加交通/票券
+                </button>
+            </div>
+
+            <div id="transportList" class="space-y-4">
+                <!-- 动态渲染交通条目 -->
+            </div>
+        </section>
+
+        <!-- 4. 预算明细与4人分摊视图 -->
+        <section id="view-budget" class="hidden space-y-6">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900">旅行预算自动核算中心 (MYR 马币基准)</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">汇率参考：100 JPY ≈ <input type="number" id="exchangeRateInput" step="0.01" value="3.00" onchange="updateExchangeRate()" class="w-14 text-center border border-slate-300 rounded px-1 py-0.5 font-semibold text-slate-700"> MYR（修改任意项目金额将自动重算总额与人均）</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 text-xs font-semibold border border-emerald-200" id="budgetConfirmedSummary">
+                            已确认支出：RM 0
+                        </span>
+                        <span class="px-3 py-1.5 rounded-xl bg-amber-50 text-amber-700 text-xs font-semibold border border-amber-200" id="budgetPendingSummary">
+                            待确认预估：RM 0
+                        </span>
+                    </div>
+                </div>
+
+                <!-- 分类预算汇总条 -->
+                <div id="budgetCategoryBars" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 my-5">
+                    <!-- 动态渲染分类卡片 -->
+                </div>
+
+                <!-- 详细账目表 -->
+                <div class="overflow-x-auto mt-4">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
+                                <th class="py-3 px-3">类别</th>
+                                <th class="py-3 px-3">项目名称</th>
+                                <th class="py-3 px-3">状态</th>
+                                <th class="py-3 px-3 text-right">4人总计 (MYR)</th>
+                                <th class="py-3 px-3 text-right">人均分摊 (MYR)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="budgetTableBody" class="divide-y divide-slate-100 text-sm">
+                            <!-- 动态生成预算明细 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 模态框：新增/编辑每日行程节点 -->
+    <div id="activityModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-200">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <h3 class="text-lg font-bold text-slate-900" id="activityModalTitle">编辑行程节点</h3>
+                <button onclick="closeModal('activityModal')" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+            </div>
+            <form id="activityForm" onsubmit="saveActivity(event)" class="space-y-4 mt-4">
+                <input type="hidden" id="actDayIndex">
+                <input type="hidden" id="actItemIndex">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">所属日期</label>
+                        <select id="actDaySelect" class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-rose-500 focus:outline-none"></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">时间段 / 时刻</label>
+                        <input type="text" id="actTime" placeholder="例如：18:30 或 下午" required class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">节点类型</label>
+                        <select id="actType" class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2">
+                            <option value="景点/逛街">🛍️ 景点 / 二次元逛街</option>
+                            <option value="餐食/烤肉">🥩 餐食 / 神户牛烤肉</option>
+                            <option value="交通/移动">🚄 交通 / 城际移动</option>
+                            <option value="住宿/入住">🏨 住宿 / Check-in</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">预订/确认状态</label>
+                        <select id="actStatus" class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2">
+                            <option value="已预订">✅ 已预订 / 已确认</option>
+                            <option value="待确认">⏳ 待确认 / 需预约</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">项目标题</label>
+                    <input type="text" id="actTitle" placeholder="例如：秋叶原手办扫货 & 肉屋横丁和牛自助" required class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">交通方式 / 详细备注 / 餐食亮点</label>
+                    <textarea id="actNote" rows="3" placeholder="填写具体路线、预约备注、退税提醒等..." class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">4人总预算估算 (MYR 马币，选填)</label>
+                    <input type="number" id="actCostMYR" step="0.01" min="0" value="0" class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2">
+                </div>
+                <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                    <button type="button" onclick="closeModal('activityModal')" class="px-4 py-2 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100">取消</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl text-sm font-semibold bg-rose-600 text-white hover:bg-rose-700">保存更新</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 模态框：编辑酒店住宿 -->
+    <div id="hotelModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-200">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <h3 class="text-lg font-bold text-slate-900" id="hotelModalTitle">编辑酒店住宿</h3>
+                <button onclick="closeModal('hotelModal')" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+            </div>
+            <form id="hotelForm" onsubmit="saveHotel(event)" class="space-y-4 mt-4">
+                <input type="hidden" id="hotelIndex">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">所在城市</label>
+                        <input type="text" id="hotelCity" placeholder="例如：东京 (浅草)" required class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">状态</label>
+                        <select id="hotelStatus" class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2">
+                            <option value="已预订">✅ 已预订 (已确认)</option>
+                            <option value="待确认">⏳ 待确认</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">酒店名称</label>
+                    <input type="text" id="hotelName" required class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">入住日期 (Check-in)</label>
+                        <input type="date" id="hotelCheckIn" required class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">退房日期 (Check-out)</label>
+                        <input type="date" id="hotelCheckOut" required class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">房型与代表人</label>
+                        <input type="text" id="hotelRoom" placeholder="例如：301房 (4人) / Kin Yip Lam" class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">4人总房费 (MYR)</label>
+                        <input type="number" id="hotelPriceMYR" step="0.01" min="0" required class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">交通优势 & 周边便利度备注</label>
+                    <textarea id="hotelNotes" rows="3" class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2"></textarea>
+                </div>
+                <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                    <button type="button" onclick="closeModal('hotelModal')" class="px-4 py-2 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100">取消</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl text-sm font-semibold bg-slate-900 text-white hover:bg-slate-800">保存酒店</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 模态框：编辑交通与票券 -->
+    <div id="transportModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-200">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <h3 class="text-lg font-bold text-slate-900" id="transportModalTitle">编辑交通与票券</h3>
+                <button onclick="closeModal('transportModal')" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+            </div>
+            <form id="transportForm" onsubmit="saveTransport(event)" class="space-y-4 mt-4">
+                <input type="hidden" id="transIndex">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">日期</label>
+                        <input type="text" id="transDate" placeholder="例如：2027-01-22 夜间" required class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">预订状态</label>
+                        <select id="transStatus" class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2">
+                            <option value="已预订">✅ 已预订 / 已出票</option>
+                            <option value="待确认">⏳ 待确认 / 现场购买</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">交通方式 / 票券名称</label>
+                    <input type="text" id="transTitle" required class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">起点 → 终点</label>
+                        <input type="text" id="transRoute" placeholder="例如：京都站 → 东京站/新宿" required class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">4人总费用 (MYR)</label>
+                        <input type="number" id="transCostMYR" step="0.01" min="0" required class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">行李/换乘/购票备注</label>
+                    <textarea id="transNotes" rows="3" class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2"></textarea>
+                </div>
+                <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                    <button type="button" onclick="closeModal('transportModal')" class="px-4 py-2 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100">取消</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl text-sm font-semibold bg-slate-900 text-white hover:bg-slate-800">保存记录</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 轻量提示消息框 (替代 alert) -->
+    <div id="toastBox" class="fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-2.5 rounded-xl shadow-lg text-sm font-medium opacity-0 pointer-events-none transition-opacity duration-300 z-50">
+        已更新行程数据
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. 初始默认行程数据 (围绕已确定的 2027年1月行程)
+        // ==========================================
+        const DEFAULT_TRIP_DATA = {
+            settings: {
+                pax: 4,
+                startDate: "2027-01-17",
+                endDate: "2027-01-27",
+                representative: "Kin Yip Lam",
+                exchangeRateJPYtoMYR: 3.00 // 100 JPY = 3.00 MYR
+            },
+            hotels: [
+                {
+                    id: "h1",
+                    city: "大阪 (新今宫)",
+                    name: "巴库罗多亚宁酒店 (BAKURO - DOYANEN HOTELS)",
+                    checkIn: "2027-01-18",
+                    checkOut: "2027-01-20",
+                    room: "四人间豪华房・1间 (4张单人床)｜订单号: 1658116478607483",
+                    priceMYR: 359.62,
+                    status: "已预订",
+                    notes: "距南海电车/JR新今宫站、动物园前站步行即达。周边有24小时MEGA堂吉诃德、玉出超市，去日本桥动漫街非常近。"
+                },
+                {
+                    id: "h2",
+                    city: "京都 (中京区)",
+                    name: "埃克利西亚酒店 (Hotel Ecclesia)",
+                    checkIn: "2027-01-20",
+                    checkOut: "2027-01-22",
+                    room: "基础四人房・1间｜订单号: 1658116419997445",
+                    priceMYR: 410.14,
+                    status: "已预订",
+                    notes: "靠近JR二条站与地铁东西线，前往岚山、京都站、河原町商圈顺畅。周边有生鲜超市、MUJI及便利店，治安极佳。"
+                },
+                {
+                    id: "h3",
+                    city: "东京 (浅草)",
+                    name: "新城塚居酒店 (Asakusa New City Hotel・ZHUOJU)",
+                    checkIn: "2027-01-23",
+                    checkOut: "2027-01-27",
+                    room: "整套公寓 301房 (2单人床+2日式床垫)｜订单号: 1658116519687522",
+                    priceMYR: 1688.58,
+                    status: "已预订",
+                    notes: "平层大公寓方便4人摊开30kg行李箱打包手办！步行至浅草站可搭都营浅草线直通京成Access特急【一车直达成田机场】，免换车搬行李。"
+                }
+            ],
+            transports: [
+                {
+                    id: "t1",
+                    date: "2027-01-17 23:00 → 01-18 06:25",
+                    title: "去程国际航班 (吉隆坡 KUL → 大阪关西 KIX)",
+                    route: "KUL → KIX (红眼直飞)",
+                    costMYR: 3200.00,
+                    status: "已预订",
+                    notes: "17日晚起飞，18日清晨06:25抵达关西机场。出关后搭乘南海电车特急直达新今宫站前往酒店寄存行李。"
+                },
+                {
+                    id: "t2",
+                    date: "2027-01-18 ~ 01-27",
+                    title: "交通IC卡 (ICOCA / Suica 手机绑定或实体卡)",
+                    route: "关西 & 关东市区地铁/JR通用",
+                    costMYR: 600.00,
+                    status: "待确认",
+                    notes: "建议每人提前在 Apple Wallet 绑定 Suica/ICOCA 或在关西机场购买 ICOCA，4人每人预充约 5,000 日元。"
+                },
+                {
+                    id: "t3",
+                    date: "2027-01-20 上午",
+                    title: "大阪 → 京都 城际电车 (JR京都线 / 阪急电铁)",
+                    route: "大阪市区 → 京都二条/河原町",
+                    costMYR: 120.00,
+                    status: "待确认",
+                    notes: "4人携带行李建议避开早高峰（08:00-09:00），搭乘JR新快速到京都站转山阴本线至二条站。"
+                },
+                {
+                    id: "t4",
+                    date: "2027-01-22 深夜 → 01-23 清晨",
+                    title: "京都 → 东京 跨夜高速巴士 (Willer Express 等)",
+                    route: "京都站八条口 → 东京站/新宿/上野",
+                    costMYR: 960.00,
+                    status: "待确认",
+                    notes: "需预订支持每人1件大行李箱寄存的班次（注意核对行李尺寸限制）。抵达东京后先前往浅草酒店寄存行李。"
+                },
+                {
+                    id: "t5",
+                    date: "2027-01-27 返程日",
+                    title: "浅草 → 成田机场 直达电车 (都营浅草线直通京成Access特急)",
+                    route: "浅草站 → 成田国际机场 (NRT)",
+                    costMYR: 165.00,
+                    status: "待确认",
+                    notes: "无需转车！确认列车方向为【成田空港行 (Access Express)】，约55分钟直达，适合4人携带满载战利品的30kg行李箱。"
+                },
+                {
+                    id: "t6",
+                    date: "2027-01-27 返程",
+                    title: "回程国际航班 (东京成田 NRT → 吉隆坡 KUL)",
+                    route: "NRT → KUL",
+                    costMYR: 3400.00,
+                    status: "已预订",
+                    notes: "回程每人务必确认已加购充足托运行李额（建议每人25kg-30kg以容纳手办模型盒）。"
+                }
+            ],
+            days: [
+                {
+                    dayNum: 1,
+                    date: "2027-01-17",
+                    weekday: "周日",
+                    city: "出发日",
+                    stayHotel: "夜宿航班上 (KUL → KIX)",
+                    summary: "吉隆坡国际机场集合，搭乘 23:00 红眼航班飞往大阪关西",
+                    items: [
+                        { time: "20:00", type: "交通/移动", title: "抵达吉隆坡国际机场 (KUL) 办理登机", status: "已预订", costMYR: 0, note: "4人检查护照有效期（需6个月以上）、Visit Japan Web 入境二维码截屏、随身充电宝与保暖外套。" },
+                        { time: "23:00", type: "交通/移动", title: "航班起飞前往大阪关西机场 (KIX)", status: "已预订", costMYR: 0, note: "机上补眠，准备迎接次日清晨抵达日本。" }
+                    ]
+                },
+                {
+                    dayNum: 2,
+                    date: "2027-01-18",
+                    weekday: "周一",
+                    city: "大阪",
+                    stayHotel: "巴库罗多亚宁酒店 (新今宫)",
+                    summary: "清晨抵达关西机场 → 新今宫放行李 → 日本桥动漫街扫货 → 道顿堀大牧场烤肉",
+                    items: [
+                        { time: "06:25", type: "交通/移动", title: "抵达大阪关西机场 (KIX) & 搭乘南海电车", status: "已预订", costMYR: 150, note: "出关后购买/充值ICOCA，搭乘南海电铁直达【新今宫站】，步行至巴库罗多亚宁酒店寄存行李。" },
+                        { time: "11:30", type: "餐食/烤肉", title: "黑门市场 / 难波周边午餐", status: "待确认", costMYR: 280, note: "品尝大阪章鱼烧、大阪烧或拉面，补充体力。" },
+                        { time: "14:00", type: "景点/逛街", title: "大阪日本桥 Den Den Town 二次元圣地巡礼", status: "已预订", costMYR: 0, note: "逛 Animate、骏河屋、Kotobukiya 寿屋、Jungle 淘中古手办与游戏周边（记得随身带护照原件满5,500日元免税）。" },
+                        { time: "19:00", type: "餐食/烤肉", title: "晚餐：焼肉屋 大牧場 (道顿堀/日本桥店)", status: "待确认", costMYR: 850, note: "正宗神户牛+黑毛和牛+猪肉无限量烤肉放题！建议提前线上预约晚餐时段。" }
+                    ]
+                },
+                {
+                    dayNum: 3,
+                    date: "2027-01-19",
+                    weekday: "周二",
+                    city: "大阪",
+                    stayHotel: "巴库罗多亚宁酒店 (新今宫)",
+                    summary: "大阪经典地标打卡（大阪城/梅田/心斋桥）与药妆补给",
+                    items: [
+                        { time: "09:30", type: "景点/逛街", title: "大阪城公园 & 天守阁外观打卡", status: "待确认", costMYR: 80, note: "冬季晨间空气清冽，适合4人合影留念。" },
+                        { time: "13:30", type: "景点/逛街", title: "梅田商圈 (HEP FIVE / Nintendo OSAKA / 宝可梦中心)", status: "待确认", costMYR: 0, note: "大丸梅田店13楼有任天堂官方旗舰店、宝可梦中心与CAPCOM商店，动漫迷必逛。" },
+                        { time: "18:30", type: "餐食/烤肉", title: "心斋桥 / 道顿堀夜景 & 自由觅食", status: "待确认", costMYR: 350, note: "打卡固力果跑跑人招牌，回酒店前可顺路逛新世界24小时 MEGA 堂吉诃德。" }
+                    ]
+                },
+                {
+                    dayNum: 4,
+                    date: "2027-01-20",
+                    weekday: "周三",
+                    city: "京都",
+                    stayHotel: "埃克利西亚酒店 (京都二条)",
+                    summary: "大阪退房移动至京都 → 锦市场 → 清水寺与二年坂三年坂古街漫步",
+                    items: [
+                        { time: "10:00", type: "住宿/入住", title: "巴库罗多亚宁酒店退房 & 前往京都", status: "已预订", costMYR: 0, note: "搭乘JR前往京都，先到【埃克利西亚酒店】寄存大件行李。" },
+                        { time: "12:30", type: "餐食/烤肉", title: "锦市场美食街午餐", status: "待确认", costMYR: 260, note: "边走边吃豆乳甜甜圈、玉子烧、海鲜串烧与抹茶甜品。" },
+                        { time: "14:30", type: "景点/逛街", title: "清水寺 → 二年坂・三年坂 → 祇园花见小路", status: "待确认", costMYR: 100, note: "感受京都古都风情，下午光线最适合拍照，顺路逛京都特色伴手礼小店。" },
+                        { time: "19:00", type: "餐食/烤肉", title: "晚餐备选：肉屋の台所 (京都木屋町店) 神户牛+猪肉放题", status: "待确认", costMYR: 950, note: "若想再吃神户牛+猪肉自助，可预约木屋町店『神户牛全套放题』，或改吃京都拉面小路。" }
+                    ]
+                },
+                {
+                    dayNum: 5,
+                    date: "2027-01-21",
+                    weekday: "周四",
+                    city: "京都",
+                    stayHotel: "埃克利西亚酒店 (京都二条)",
+                    summary: "伏见稻荷大社千本鸟居 → 岚山竹林与渡月桥半日游",
+                    items: [
+                        { time: "08:30", type: "景点/逛街", title: "伏见稻荷大社（千本鸟居）", status: "待确认", costMYR: 0, note: "建议早点出发避开旅行团人潮，拍摄红彤彤的千本鸟居。" },
+                        { time: "13:00", type: "景点/逛街", title: "岚山风景区（渡月桥、竹林小径、天龙寺周边）", status: "待确认", costMYR: 240, note: "从二条站搭乘JR山阴本线直达嵯峨岚山站仅需10分钟，交通极其顺路！" },
+                        { time: "18:30", type: "餐食/烤肉", title: "四条河原町商圈晚餐 & 购物", status: "待确认", costMYR: 350, note: "河原町OPA、高岛屋及周边动漫店自由活动。" }
+                    ]
+                },
+                {
+                    dayNum: 6,
+                    date: "2027-01-22",
+                    weekday: "周五",
+                    city: "夜巴移动",
+                    stayHotel: "跨夜高速巴士 (京都 → 东京)",
+                    summary: "京都酒店退房寄存行李 → 宇治/市区自由活动 → 深夜搭乘夜巴赴东京",
+                    items: [
+                        { time: "10:00", type: "住宿/入住", title: "埃克利西亚酒店退房 & 寄存行李", status: "已预订", costMYR: 0, note: "白天轻装出行，晚上取回行李前往京都站八条口乘车。" },
+                        { time: "11:30", type: "景点/逛街", title: "宇治抹茶半日游 或 京都市区补漏逛街", status: "待确认", costMYR: 220, note: "可前往宇治平等院表参道品尝正宗抹茶圣代，或留在京都站周边逛伊势丹/Yodobashi。" },
+                        { time: "20:00", type: "餐食/烤肉", title: "京都站八条口晚餐（推荐：但馬屋 PREMIUM 神户牛寿喜烧）", status: "待确认", costMYR: 880, note: "上夜巴前吃一顿暖呼呼的神户牛+国产猪肉寿喜烧放题，饱餐后方便车上入睡。" },
+                        { time: "23:00", type: "交通/移动", title: "京都站八条口集合，搭乘跨夜巴士前往东京", status: "待确认", costMYR: 0, note: "提前20分钟抵达对应乘车月台，确认4件大行李顺利放入车底行李舱。" }
+                    ]
+                },
+                {
+                    dayNum: 7,
+                    date: "2027-01-23",
+                    weekday: "周六",
+                    city: "东京",
+                    stayHotel: "新城塚居酒店 (浅草 301房)",
+                    summary: "清晨抵达东京 → 浅草放行李 → 浅草寺雷门 → 秋叶原二次元大本营首战",
+                    items: [
+                        { time: "07:30", type: "住宿/入住", title: "夜巴抵达东京 & 前往浅草新城塚居酒店寄存行李", status: "已预订", costMYR: 0, note: "先联系房东确认301房是否可提前寄存行李，随后在浅草站周边吃早餐洗漱。" },
+                        { time: "10:30", type: "景点/逛街", title: "浅草寺・雷门・仲见世通漫步", status: "待确认", costMYR: 150, note: "酒店步行530米即达浅草寺，求签、吃人形烧并远眺晴空塔。" },
+                        { time: "14:00", type: "景点/逛街", title: "秋叶原电器街 & 手办模型深度扫货 (第一回合)", status: "待确认", costMYR: 0, note: "重点攻略 Radio会馆、AmiAmi、Mandarake、Volks、Animate。注意各大店铺免税柜台截止时间（通常20:00）。" },
+                        { time: "19:30", type: "餐食/烤肉", title: "秋叶原/上野和牛烤肉（推荐：肉屋横丁 或 肉屋の台所上野店）", status: "待确认", costMYR: 980, note: "大口享用黑毛和牛/神户牛与猪肉自助，回浅草公寓整理首日战利品。" }
+                    ]
+                },
+                {
+                    dayNum: 8,
+                    date: "2027-01-24",
+                    weekday: "周日",
+                    city: "东京",
+                    stayHotel: "新城塚居酒店 (浅草 301房)",
+                    summary: "池袋乙女路/Sunshine City 动漫城 → 新宿歌舞伎町夜景",
+                    items: [
+                        { time: "10:30", type: "景点/逛街", title: "池袋动漫圣地巡礼 (Animate池袋总店 & Sunshine City)", status: "待确认", costMYR: 0, note: "全球最大Animate旗舰店、宝可梦中心Mega Tokyo、万代扭蛋总店集中在此，谷子与周边极全。" },
+                        { time: "16:30", type: "景点/逛街", title: "新宿商圈（哥斯拉头雕、3D巨幕猫、堂吉诃德）", status: "待确认", costMYR: 320, note: "体验东京最繁华的商业中心，晚间在思出横丁或新宿西口享用烧鸟/拉面。" }
+                    ]
+                },
+                {
+                    dayNum: 9,
+                    date: "2027-01-25",
+                    weekday: "周一",
+                    city: "东京",
+                    stayHotel: "新城塚居酒店 (浅草 301房)",
+                    summary: "河口湖富士山一日游 或 涩谷/原宿/中野百老汇深度逛",
+                    items: [
+                        { time: "09:00", type: "景点/逛街", title: "备选A：富士山河口湖一日游 / 备选B：中野百老汇中古淘货", status: "待确认", costMYR: 600, note: "若天气晴朗强烈推荐去河口湖看冬季雪顶富士山；若专注动漫怀旧手办则去中野百老汇（Nakano Broadway）。" },
+                        { time: "17:00", type: "景点/逛街", title: "涩谷 PARCO (Nintendo TOKYO / CAPCOM / JUMP SHOP) & 十字路口", status: "待确认", costMYR: 350, note: "涩谷PARCO 6楼是游戏动漫官方店集合地，非常适合补齐限定商品。" }
+                    ]
+                },
+                {
+                    dayNum: 10,
+                    date: "2027-01-26",
+                    weekday: "周二",
+                    city: "东京",
+                    stayHotel: "新城塚居酒店 (浅草 301房)",
+                    summary: "东京最后冲刺补货（秋叶原/上野阿美横丁）& 回公寓大装箱打包",
+                    items: [
+                        { time: "10:30", type: "景点/逛街", title: "上野阿美横丁药妆伴手礼 & 秋叶原最终补漏", status: "待确认", costMYR: 300, note: "在二木的菓子、多庆屋、OS Drug 买齐零食与药妆，把未买到的手办一次收齐。" },
+                        { time: "19:00", type: "餐食/烤肉", title: "东京最后一晚庆功宴（但馬屋秋叶原店 或 烧肉放题）", status: "待确认", costMYR: 900, note: "吃完回浅草301公寓进行最终称重与打包：拆盒折叠或气泡膜保护手办，确保4个行李箱不超重。" }
+                    ]
+                },
+                {
+                    dayNum: 11,
+                    date: "2027-01-27",
+                    weekday: "周三",
+                    city: "东京",
+                    stayHotel: "返程回国",
+                    summary: "浅草退房 → 搭乘直达电车前往成田机场 (NRT) → 飞返吉隆坡",
+                    items: [
+                        { time: "09:30", type: "住宿/入住", title: "浅草新城塚居酒店退房 & 拖行李前往浅草站", status: "已预订", costMYR: 0, note: "检查护照、免税小票、充电器与所有手办战利品无遗漏。" },
+                        { time: "10:30", type: "交通/移动", title: "浅草站搭乘【都营浅草线直通京成Access特急】直达成田机场", status: "待确认", costMYR: 0, note: "一车直达无需换乘！建议提前至少3小时抵达成田机场办理退税核验与行李托运。" },
+                        { time: "下午", type: "交通/移动", title: "成田机场免税店最后采购 & 登机返程吉隆坡", status: "已预订", costMYR: 200, note: "购买白色恋人、Tokyo Banana、Royce生巧等机场伴手礼，圆满结束日本4人之旅！" }
+                    ]
+                }
+            ]
+        };
+
+        // ==========================================
+        // 2. 状态管理与本地存储持久化
+        // ==========================================
+        let tripData = loadTripData();
+        let currentCityFilter = "ALL";
+        let selectedDayNum = null;
+
+        function loadTripData() {
+            const saved = localStorage.getItem("japan_4pax_trip_2027_v1");
+            if (saved) {
+                try {
+                    return JSON.parse(saved);
+                } catch (e) {
+                    console.error("数据解析失败，使用默认数据", e);
+                }
+            }
+            return JSON.parse(JSON.stringify(DEFAULT_TRIP_DATA));
+        }
+
+        function saveTripData(showToastMsg = "已自动保存并更新总览") {
+            localStorage.setItem("japan_4pax_trip_2027_v1", JSON.stringify(tripData));
+            renderAll();
+            if (showToastMsg) showToast(showToastMsg);
+        }
+
+        function resetToDefaultData() {
+            tripData = JSON.parse(JSON.stringify(DEFAULT_TRIP_DATA));
+            currentCityFilter = "ALL";
+            selectedDayNum = null;
+            saveTripData("已恢复为初始确定行程数据");
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById("toastBox");
+            toast.textContent = msg;
+            toast.classList.remove("opacity-0");
+            toast.classList.add("opacity-100");
+            setTimeout(() => {
+                toast.classList.remove("opacity-100");
+                toast.classList.add("opacity-0");
+            }, 2200);
+        }
+
+        // ==========================================
+        // 3. 全局设置与自动计算核心逻辑
+        // ==========================================
+        function updateGlobalSettings() {
+            const pax = parseInt(document.getElementById("globalPax").value) || 4;
+            const start = document.getElementById("globalStartDate").value;
+            const end = document.getElementById("globalEndDate").value;
+
+            tripData.settings.pax = Math.max(1, pax);
+            if (start) tripData.settings.startDate = start;
+            if (end) tripData.settings.endDate = end;
+
+            // 如果修改了出发日期，顺延更新每日对应日期
+            if (start) {
+                const baseDate = new Date(start + "T00:00:00");
+                const weekdays = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+                tripData.days.forEach((day, idx) => {
+                    const d = new Date(baseDate);
+                    d.setDate(baseDate.getDate() + idx);
+                    const yyyy = d.getFullYear();
+                    const mm = String(d.getMonth() + 1).padStart(2, "0");
+                    const dd = String(d.getDate()).padStart(2, "0");
+                    day.date = `${yyyy}-${mm}-${dd}`;
+                    day.weekday = weekdays[d.getDay()];
+                });
+            }
+
+            saveTripData("已更新人数与日期并重算总览");
+        }
+
+        function updateExchangeRate() {
+            const rate = parseFloat(document.getElementById("exchangeRateInput").value);
+            if (rate > 0) {
+                tripData.settings.exchangeRateJPYtoMYR = rate;
+                saveTripData("汇率已更新");
+            }
+        }
+
+        function calculateSummaryStats() {
+            const pax = tripData.settings.pax || 4;
+            const rate = tripData.settings.exchangeRateJPYtoMYR || 3.0; // 100 JPY = rate MYR
+
+            // 计算总晚数
+            let totalHotelNights = 0;
+            tripData.hotels.forEach(h => {
+                const d1 = new Date(h.checkIn);
+                const d2 = new Date(h.checkOut);
+                const diff = Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
+                if (diff > 0) totalHotelNights += diff;
+            });
+
+            // 统计预订状态与金额
+            let confirmedItems = 0;
+            let totalItems = 0;
+
+            let hotelConfirmedMYR = 0, hotelPendingMYR = 0;
+            let transConfirmedMYR = 0, transPendingMYR = 0;
+            let foodConfirmedMYR = 0, foodPendingMYR = 0;
+            let spotConfirmedMYR = 0, spotPendingMYR = 0;
+
+            tripData.hotels.forEach(h => {
+                totalItems++;
+                const cost = parseFloat(h.priceMYR) || 0;
+                if (h.status === "已预订") {
+                    confirmedItems++;
+                    hotelConfirmedMYR += cost;
+                } else {
+                    hotelPendingMYR += cost;
+                }
+            });
+
+            tripData.transports.forEach(t => {
+                totalItems++;
+                const cost = parseFloat(t.costMYR) || 0;
+                if (t.status === "已预订") {
+                    confirmedItems++;
+                    transConfirmedMYR += cost;
+                } else {
+                    transPendingMYR += cost;
+                }
+            });
+
+            tripData.days.forEach(d => {
+                d.items.forEach(item => {
+                    totalItems++;
+                    const cost = parseFloat(item.costMYR) || 0;
+                    const isConfirmed = item.status === "已预订";
+                    if (isConfirmed) confirmedItems++;
+
+                    if (item.type.includes("餐食")) {
+                        isConfirmed ? (foodConfirmedMYR += cost) : (foodPendingMYR += cost);
+                    } else if (item.type.includes("交通")) {
+                        isConfirmed ? (transConfirmedMYR += cost) : (transPendingMYR += cost);
+                    } else {
+                        isConfirmed ? (spotConfirmedMYR += cost) : (spotPendingMYR += cost);
+                    }
+                });
+            });
+
+            const totalConfirmedMYR = hotelConfirmedMYR + transConfirmedMYR + foodConfirmedMYR + spotConfirmedMYR;
+            const totalPendingMYR = hotelPendingMYR + transPendingMYR + foodPendingMYR + spotPendingMYR;
+            const grandTotalMYR = totalConfirmedMYR + totalPendingMYR;
+            const grandTotalJPY = Math.round((grandTotalMYR / rate) * 100);
+
+            const perPersonMYR = grandTotalMYR / pax;
+            const perPersonJPY = Math.round(grandTotalJPY / pax);
+
+            return {
+                pax,
+                totalDays: tripData.days.length,
+                totalHotelNights,
+                confirmedItems,
+                pendingItems: totalItems - confirmedItems,
+                totalItems,
+                grandTotalMYR,
+                grandTotalJPY,
+                perPersonMYR,
+                perPersonJPY,
+                totalConfirmedMYR,
+                totalPendingMYR,
+                categories: {
+                    hotel: hotelConfirmedMYR + hotelPendingMYR,
+                    trans: transConfirmedMYR + transPendingMYR,
+                    food: foodConfirmedMYR + foodPendingMYR,
+                    spot: spotConfirmedMYR + spotPendingMYR
+                }
+            };
+        }
+
+        // ==========================================
+        // 4. 界面渲染逻辑
+        // ==========================================
+        function renderAll() {
+            // 同步顶部输入控件值
+            document.getElementById("globalPax").value = tripData.settings.pax;
+            document.getElementById("globalStartDate").value = tripData.settings.startDate;
+            document.getElementById("globalEndDate").value = tripData.settings.endDate;
+            document.getElementById("exchangeRateInput").value = tripData.settings.exchangeRateJPYtoMYR;
+
+            const stats = calculateSummaryStats();
+
+            // 更新副标题与统计卡片
+            document.getElementById("tripSubtitle").textContent =
+                `主代表：${tripData.settings.representative} ｜ ${stats.pax}人同行 ｜ ${tripData.settings.startDate} 至 ${tripData.settings.endDate}（阪进东出・二次元与和牛之旅）`;
+
+            document.getElementById("statDuration").textContent = `${stats.totalDays}天 ${stats.totalHotelNights}晚住宿`;
+            document.getElementById("statBookingRatio").textContent = `${stats.confirmedItems} / ${stats.totalItems}`;
+            document.getElementById("statPendingCount").textContent = `${stats.pendingItems} 项待确认`;
+            document.getElementById("statTotalMYR").textContent = `RM ${stats.grandTotalMYR.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById("statTotalJPY").textContent = `≈ ¥${stats.grandTotalJPY.toLocaleString()}`;
+            document.getElementById("statPaxLabel").textContent = stats.pax;
+            document.getElementById("statPerPersonMYR").textContent = `RM ${stats.perPersonMYR.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById("statPerPersonJPY").textContent = `≈ ¥${stats.perPersonJPY.toLocaleString()} / 人`;
+
+            renderDaySelector();
+            renderDailyItinerary();
+            renderHotels();
+            renderTransports();
+            renderBudget(stats);
+        }
+
+        function switchMainTab(tabName) {
+            const tabs = ["itinerary", "hotels", "transport", "budget"];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                const view = document.getElementById(`view-${t}`);
+                if (t === tabName) {
+                    btn.classList.add("tab-active");
+                    btn.classList.remove("text-slate-600", "hover:bg-slate-100");
+                    view.classList.remove("hidden");
+                } else {
+                    btn.classList.remove("tab-active");
+                    btn.classList.add("text-slate-600", "hover:bg-slate-100");
+                    view.classList.add("hidden");
+                }
+            });
+        }
+
+        function filterCity(city) {
+            currentCityFilter = city;
+            selectedDayNum = null;
+            document.querySelectorAll(".city-filter-btn").forEach(btn => {
+                if (btn.dataset.city === city) {
+                    btn.className = "city-filter-btn px-3 py-1 rounded-full text-xs font-semibold bg-slate-900 text-white";
+                } else {
+                    btn.className = "city-filter-btn px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200";
+                }
+            });
+            renderDaySelector();
+            renderDailyItinerary();
+        }
+
+        function selectSpecificDay(dayNum) {
+            if (selectedDayNum === dayNum) {
+                selectedDayNum = null; // 再次点击取消单日锁定，显示全部
+            } else {
+                selectedDayNum = dayNum;
+            }
+            renderDaySelector();
+            renderDailyItinerary();
+        }
+
+        function renderDaySelector() {
+            const container = document.getElementById("daySelectorBar");
+            container.innerHTML = "";
+
+            const filteredDays = tripData.days.filter(d => currentCityFilter === "ALL" || d.city === currentCityFilter);
+
+            filteredDays.forEach(day => {
+                const isSelected = selectedDayNum === day.dayNum;
+                const cityBadgeColor =
+                    day.city === "大阪" ? "text-orange-600 bg-orange-50" :
+                    day.city === "京都" ? "text-purple-600 bg-purple-50" :
+                    day.city === "东京" ? "text-rose-600 bg-rose-50" :
+                    "text-indigo-600 bg-indigo-50";
+
+                const card = document.createElement("button");
+                card.onclick = () => selectSpecificDay(day.dayNum);
+                card.className = `flex-shrink-0 px-3.5 py-2 rounded-xl border text-left transition ${
+                    isSelected
+                        ? "border-rose-500 bg-rose-50/70 ring-2 ring-rose-500/30"
+                        : "border-slate-200 bg-slate-50/60 hover:bg-slate-100"
+                }`;
+                card.innerHTML = `
+                    <div class="flex items-center justify-between gap-3">
+                        <span class="text-xs font-bold text-slate-900">Day ${day.dayNum}</span>
+                        <span class="text-[11px] font-semibold px-1.5 py-0.5 rounded ${cityBadgeColor}">${day.city}</span>
+                    </div>
+                    <div class="text-xs text-slate-600 mt-1 font-medium">${day.date.slice(5)} (${day.weekday})</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderDailyItinerary() {
+            const container = document.getElementById("dailyCardsContainer");
+            container.innerHTML = "";
+
+            let daysToShow = tripData.days.filter(d => currentCityFilter === "ALL" || d.city === currentCityFilter);
+            if (selectedDayNum !== null) {
+                daysToShow = daysToShow.filter(d => d.dayNum === selectedDayNum);
+            }
+
+            if (daysToShow.length === 0) {
+                container.innerHTML = `<div class="bg-white p-8 rounded-2xl text-center text-slate-500 border border-slate-200">当前筛选条件下暂无行程数据</div>`;
+                return;
+            }
+
+            daysToShow.forEach((day) => {
+                const realDayIndex = tripData.days.findIndex(d => d.dayNum === day.dayNum);
+                const cityBadgeStyle =
+                    day.city === "大阪" ? "bg-orange-100 text-orange-800 border-orange-200" :
+                    day.city === "京都" ? "bg-purple-100 text-purple-800 border-purple-200" :
+                    day.city === "东京" ? "bg-rose-100 text-rose-800 border-rose-200" :
+                    "bg-indigo-100 text-indigo-800 border-indigo-200";
+
+                const dayCard = document.createElement("div");
+                dayCard.className = "bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden";
+
+                // 卡片头部：支持内联切换城市与住宿备注
+                dayCard.innerHTML = `
+                    <div class="bg-slate-50/80 px-5 py-4 border-b border-slate-200/80 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                        <div>
+                            <div class="flex items-center gap-2.5 flex-wrap">
+                                <span class="text-base sm:text-lg font-bold text-slate-900">Day ${day.dayNum} · ${day.date} (${day.weekday})</span>
+                                <select onchange="changeDayCity(${realDayIndex}, this.value)"
+                                    class="text-xs font-bold px-2.5 py-1 rounded-full border cursor-pointer focus:outline-none ${cityBadgeStyle}">
+                                    <option value="出发日" ${day.city === "出发日" ? "selected" : ""}>✈️ 出发日</option>
+                                    <option value="大阪" ${day.city === "大阪" ? "selected" : ""}>🏯 大阪</option>
+                                    <option value="京都" ${day.city === "京都" ? "selected" : ""}>⛩️ 京都</option>
+                                    <option value="夜巴移动" ${day.city === "夜巴移动" ? "selected" : ""}>🚌 夜巴移动</option>
+                                    <option value="东京" ${day.city === "东京" ? "selected" : ""}>🗼 东京</option>
+                                </select>
+                                <span class="text-xs text-slate-500 bg-white px-2.5 py-1 rounded-lg border border-slate-200">
+                                    🏨 当晚住宿：<strong>${day.stayHotel}</strong>
+                                </span>
+                            </div>
+                            <p class="text-xs sm:text-sm text-slate-600 mt-1.5 font-medium">${day.summary}</p>
+                        </div>
+                        <div class="flex items-center gap-2 self-start lg:self-center">
+                            <button onclick="openActivityModal(${realDayIndex}, -1)"
+                                class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 transition">
+                                + 添加本天安排
+                            </button>
+                        </div>
+                    </div>
+                    <div class="divide-y divide-slate-100">
+                        ${day.items.map((item, itemIdx) => {
+                            const statusClass = item.status === "已预订" ? "status-confirmed" : "status-pending";
+                            const typeIcon =
+                                item.type.includes("餐食") ? "🥩" :
+                                item.type.includes("交通") ? "🚄" :
+                                item.type.includes("住宿") ? "🏨" : "🛍️";
+
+                            return `
+                                <div class="p-4 sm:px-5 hover:bg-slate-50/70 transition flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                                    <div class="flex items-start gap-3.5">
+                                        <div class="w-16 sm:w-20 flex-shrink-0 pt-0.5">
+                                            <span class="inline-block text-xs font-bold text-slate-700 bg-slate-100 px-2 py-1 rounded-lg text-center w-full">
+                                                ${item.time}
+                                            </span>
+                                        </div>
+                                        <div class="space-y-1">
+                                            <div class="flex items-center gap-2 flex-wrap">
+                                                <span class="text-sm font-bold text-slate-900">${typeIcon} ${item.title}</span>
+                                                <button onclick="toggleActivityStatus(${realDayIndex}, ${itemIdx})" title="点击切换已预订/待确认状态"
+                                                    class="text-[11px] font-semibold px-2 py-0.5 rounded-full border cursor-pointer transition ${statusClass}">
+                                                    ${item.status === "已预订" ? "✅ 已预订" : "⏳ 待确认"}
+                                                </button>
+                                                ${item.costMYR > 0 ? `<span class="text-xs font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">4人预算: RM ${Number(item.costMYR).toFixed(0)}</span>` : ""}
+                                            </div>
+                                            <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">${item.note || "暂无备注"}</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2 self-end sm:self-center flex-shrink-0">
+                                        <button onclick="openActivityModal(${realDayIndex}, ${itemIdx})"
+                                            class="text-xs font-medium px-2.5 py-1.5 rounded-lg text-slate-600 hover:bg-slate-200/70 transition">
+                                            编辑
+                                        </button>
+                                        <button onclick="deleteActivity(${realDayIndex}, ${itemIdx})"
+                                            class="text-xs font-medium px-2.5 py-1.5 rounded-lg text-rose-600 hover:bg-rose-50 transition">
+                                            删除
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        }).join("")}
+                    </div>
+                `;
+                container.appendChild(dayCard);
+            });
+        }
+
+        function changeDayCity(dayIndex, newCity) {
+            tripData.days[dayIndex].city = newCity;
+            saveTripData(`Day ${tripData.days[dayIndex].dayNum} 城市已切换为 ${newCity}`);
+        }
+
+        function toggleActivityStatus(dayIndex, itemIndex) {
+            const item = tripData.days[dayIndex].items[itemIndex];
+            item.status = item.status === "已预订" ? "待确认" : "已预订";
+            saveTripData(`已切换为「${item.status}」`);
+        }
+
+        function deleteActivity(dayIndex, itemIndex) {
+            tripData.days[dayIndex].items.splice(itemIndex, 1);
+            saveTripData("已删除该日程节点");
+        }
+
+        // ==========================================
+        // 5. 酒店模块渲染与编辑
+        // ==========================================
+        function renderHotels() {
+            const grid = document.getElementById("hotelsGrid");
+            grid.innerHTML = "";
+            const pax = tripData.settings.pax || 4;
+
+            tripData.hotels.forEach((h, idx) => {
+                const d1 = new Date(h.checkIn);
+                const d2 = new Date(h.checkOut);
+                const nights = Math.max(1, Math.round((d2 - d1) / (1000 * 60 * 60 * 24)));
+                const perPerson = (h.priceMYR / pax).toFixed(2);
+                const statusClass = h.status === "已预订" ? "status-confirmed" : "status-pending";
+
+                const card = document.createElement("div");
+                card.className = "bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex flex-col justify-between";
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between gap-2 mb-3">
+                            <span class="text-xs font-bold px-2.5 py-1 rounded-lg bg-slate-900 text-white">${h.city}</span>
+                            <button onclick="toggleHotelStatus(${idx})" class="text-xs font-semibold px-2.5 py-0.5 rounded-full border cursor-pointer ${statusClass}">
+                                ${h.status === "已预订" ? "✅ 已预订" : "⏳ 待确认"}
+                            </button>
+                        </div>
+                        <h3 class="text-base font-bold text-slate-900 leading-snug">${h.name}</h3>
+                        <p class="text-xs text-slate-500 mt-1">${h.room}</p>
+
+                        <div class="mt-4 bg-slate-50 rounded-xl p-3 border border-slate-100 grid grid-cols-2 gap-2 text-xs">
+                            <div>
+                                <span class="text-slate-400 block">入住 / 退房</span>
+                                <span class="font-semibold text-slate-800">${h.checkIn.slice(5)} → ${h.checkOut.slice(5)} (${nights}晚)</span>
+                            </div>
+                            <div>
+                                <span class="text-slate-400 block">${pax}人总价 / 人均</span>
+                                <span class="font-bold text-rose-600">RM ${Number(h.priceMYR).toFixed(2)}</span>
+                                <span class="text-slate-500 block text-[11px]">(人均 RM ${perPerson})</span>
+                            </div>
+                        </div>
+
+                        <p class="text-xs text-slate-600 mt-3 leading-relaxed bg-amber-50/40 p-2.5 rounded-xl border border-amber-100/80">
+                            💡 ${h.notes}
+                        </p>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2 mt-4 pt-3 border-t border-slate-100">
+                        <button onclick="openHotelModal(${idx})" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+                            编辑酒店信息
+                        </button>
+                        <button onclick="deleteHotel(${idx})" class="text-xs font-medium px-2.5 py-1.5 rounded-lg text-rose-600 hover:bg-rose-50 transition">
+                            删除
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function toggleHotelStatus(idx) {
+            tripData.hotels[idx].status = tripData.hotels[idx].status === "已预订" ? "待确认" : "已预订";
+            saveTripData("酒店状态已更新");
+        }
+
+        function deleteHotel(idx) {
+            tripData.hotels.splice(idx, 1);
+            saveTripData("已删除住宿记录");
+        }
+
+        // ==========================================
+        // 6. 交通模块渲染与编辑
+        // ==========================================
+        function renderTransports() {
+            const list = document.getElementById("transportList");
+            list.innerHTML = "";
+            const pax = tripData.settings.pax || 4;
+
+            tripData.transports.forEach((t, idx) => {
+                const statusClass = t.status === "已预订" ? "status-confirmed" : "status-pending";
+                const perPerson = (t.costMYR / pax).toFixed(2);
+
+                const row = document.createElement("div");
+                row.className = "bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4";
+                row.innerHTML = `
+                    <div class="space-y-1.5">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-xs font-bold text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-lg">${t.date}</span>
+                            <button onclick="toggleTransportStatus(${idx})" class="text-xs font-semibold px-2.5 py-0.5 rounded-full border cursor-pointer ${statusClass}">
+                                ${t.status === "已预订" ? "✅ 已预订" : "⏳ 待确认"}
+                            </button>
+                            <span class="text-xs font-semibold text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-lg">
+                                路线：${t.route}
+                            </span>
+                        </div>
+                        <h3 class="text-base font-bold text-slate-900">${t.title}</h3>
+                        <p class="text-xs sm:text-sm text-slate-600">${t.notes}</p>
+                    </div>
+
+                    <div class="flex sm:flex-col items-center sm:items-end justify-between gap-2 border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100 flex-shrink-0">
+                        <div class="text-left sm:text-right">
+                            <div class="text-sm font-bold text-slate-900">RM ${Number(t.costMYR).toFixed(2)} <span class="text-xs font-normal text-slate-500">(${pax}人)</span></div>
+                            <div class="text-xs text-slate-500">人均 RM ${perPerson}</div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="openTransportModal(${idx})" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700">编辑</button>
+                            <button onclick="deleteTransport(${idx})" class="text-xs font-medium px-2.5 py-1.5 rounded-lg text-rose-600 hover:bg-rose-50">删除</button>
+                        </div>
+                    </div>
+                `;
+                list.appendChild(row);
+            });
+        }
+
+        function toggleTransportStatus(idx) {
+            tripData.transports[idx].status = tripData.transports[idx].status === "已预订" ? "待确认" : "已预订";
+            saveTripData("交通状态已更新");
+        }
+
+        function deleteTransport(idx) {
+            tripData.transports.splice(idx, 1);
+            saveTripData("已删除交通记录");
+        }
+
+        // ==========================================
+        // 7. 预算中心渲染
+        // ==========================================
+        function renderBudget(stats) {
+            const pax = stats.pax;
+            document.getElementById("budgetConfirmedSummary").textContent = `已确认支出：RM ${stats.totalConfirmedMYR.toFixed(2)}`;
+            document.getElementById("budgetPendingSummary").textContent = `待确认预估：RM ${stats.totalPendingMYR.toFixed(2)}`;
+
+            const catContainer = document.getElementById("budgetCategoryBars");
+            const cats = [
+                { label: "🏨 酒店住宿总计", val: stats.categories.hotel, color: "bg-blue-600" },
+                { label: "✈️ 机票与跨城交通", val: stats.categories.trans, color: "bg-indigo-600" },
+                { label: "🥩 神户牛烤肉与餐食", val: stats.categories.food, color: "bg-rose-600" },
+                { label: "🛍️ 门票与活动杂费", val: stats.categories.spot, color: "bg-amber-500" }
+            ];
+
+            catContainer.innerHTML = cats.map(c => {
+                const pct = stats.grandTotalMYR > 0 ? Math.round((c.val / stats.grandTotalMYR) * 100) : 0;
+                return `
+                    <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80">
+                        <div class="flex justify-between text-xs font-semibold text-slate-600">
+                            <span>${c.label}</span>
+                            <span>${pct}%</span>
+                        </div>
+                        <div class="text-base font-bold text-slate-900 mt-1">RM ${c.val.toFixed(2)}</div>
+                        <div class="text-[11px] text-slate-500 mb-2">人均 RM ${(c.val / pax).toFixed(2)}</div>
+                        <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                            <div class="${c.color} h-1.5 rounded-full" style="width: ${pct}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+
+            // 汇总所有带金额的项目
+            const tbody = document.getElementById("budgetTableBody");
+            const rows = [];
+
+            tripData.hotels.forEach(h => {
+                rows.push({ cat: "🏨 住宿", name: `${h.city} - ${h.name}`, status: h.status, cost: Number(h.priceMYR) });
+            });
+            tripData.transports.forEach(t => {
+                if (Number(t.costMYR) > 0) {
+                    rows.push({ cat: "🚄 交通", name: t.title, status: t.status, cost: Number(t.costMYR) });
+                }
+            });
+            tripData.days.forEach(d => {
+                d.items.forEach(i => {
+                    if (Number(i.costMYR) > 0) {
+                        rows.push({ cat: i.type, name: `Day ${d.dayNum} (${d.city}) - ${i.title}`, status: i.status, cost: Number(i.costMYR) });
+                    }
+                });
+            });
+
+            tbody.innerHTML = rows.map(r => `
+                <tr class="hover:bg-slate-50">
+                    <td class="py-2.5 px-3 text-xs font-semibold text-slate-600">${r.cat}</td>
+                    <td class="py-2.5 px-3 font-medium text-slate-900">${r.name}</td>
+                    <td class="py-2.5 px-3">
+                        <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full border ${r.status === "已预订" ? "status-confirmed" : "status-pending"}">
+                            ${r.status}
+                        </span>
+                    </td>
+                    <td class="py-2.5 px-3 text-right font-semibold text-slate-900">RM ${r.cost.toFixed(2)}</td>
+                    <td class="py-2.5 px-3 text-right text-slate-600">RM ${(r.cost / pax).toFixed(2)}</td>
+                </tr>
+            `).join("");
+        }
+
+        // ==========================================
+        // 8. 模态框打开与表单提交逻辑
+        // ==========================================
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            modal.classList.add("hidden");
+            modal.classList.remove("flex");
+        }
+
+        function openActivityModal(dayIdx = 1, itemIdx = -1) {
+            const modal = document.getElementById("activityModal");
+            const daySelect = document.getElementById("actDaySelect");
+            daySelect.innerHTML = tripData.days.map((d, idx) =>
+                `<option value="${idx}">Day ${d.dayNum} (${d.date.slice(5)} ${d.city})</option>`
+            ).join("");
+
+            document.getElementById("actDayIndex").value = dayIdx;
+            document.getElementById("actItemIndex").value = itemIdx;
+            daySelect.value = dayIdx;
+
+            if (itemIdx >= 0) {
+                const item = tripData.days[dayIdx].items[itemIdx];
+                document.getElementById("activityModalTitle").textContent = "编辑行程节点";
+                document.getElementById("actTime").value = item.time;
+                document.getElementById("actType").value = item.type;
+                document.getElementById("actStatus").value = item.status;
+                document.getElementById("actTitle").value = item.title;
+                document.getElementById("actNote").value = item.note;
+                document.getElementById("actCostMYR").value = item.costMYR || 0;
+            } else {
+                document.getElementById("activityModalTitle").textContent = "新增行程 / 餐食节点";
+                document.getElementById("actTime").value = "15:00";
+                document.getElementById("actType").value = "景点/逛街";
+                document.getElementById("actStatus").value = "待确认";
+                document.getElementById("actTitle").value = "";
+                document.getElementById("actNote").value = "";
+                document.getElementById("actCostMYR").value = 0;
+            }
+
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+        }
+
+        function saveActivity(e) {
+            e.preventDefault();
+            const targetDayIdx = parseInt(document.getElementById("actDaySelect").value);
+            const origDayIdx = parseInt(document.getElementById("actDayIndex").value);
+            const itemIdx = parseInt(document.getElementById("actItemIndex").value);
+
+            const newItem = {
+                time: document.getElementById("actTime").value.trim(),
+                type: document.getElementById("actType").value,
+                status: document.getElementById("actStatus").value,
+                title: document.getElementById("actTitle").value.trim(),
+                note: document.getElementById("actNote").value.trim(),
+                costMYR: parseFloat(document.getElementById("actCostMYR").value) || 0
+            };
+
+            if (itemIdx >= 0) {
+                if (origDayIdx === targetDayIdx) {
+                    tripData.days[targetDayIdx].items[itemIdx] = newItem;
+                } else {
+                    tripData.days[origDayIdx].items.splice(itemIdx, 1);
+                    tripData.days[targetDayIdx].items.push(newItem);
+                }
+            } else {
+                tripData.days[targetDayIdx].items.push(newItem);
+            }
+
+            closeModal("activityModal");
+            saveTripData("行程节点已保存并更新预算总览");
+        }
+
+        function openHotelModal(idx = -1) {
+            const modal = document.getElementById("hotelModal");
+            document.getElementById("hotelIndex").value = idx;
+
+            if (idx >= 0) {
+                const h = tripData.hotels[idx];
+                document.getElementById("hotelModalTitle").textContent = "编辑酒店住宿";
+                document.getElementById("hotelCity").value = h.city;
+                document.getElementById("hotelStatus").value = h.status;
+                document.getElementById("hotelName").value = h.name;
+                document.getElementById("hotelCheckIn").value = h.checkIn;
+                document.getElementById("hotelCheckOut").value = h.checkOut;
+                document.getElementById("hotelRoom").value = h.room;
+                document.getElementById("hotelPriceMYR").value = h.priceMYR;
+                document.getElementById("hotelNotes").value = h.notes;
+            } else {
+                document.getElementById("hotelModalTitle").textContent = "新增住宿记录";
+                document.getElementById("hotelCity").value = "东京";
+                document.getElementById("hotelStatus").value = "待确认";
+                document.getElementById("hotelName").value = "";
+                document.getElementById("hotelCheckIn").value = "2027-01-23";
+                document.getElementById("hotelCheckOut").value = "2027-01-27";
+                document.getElementById("hotelRoom").value = "四人房・1间";
+                document.getElementById("hotelPriceMYR").value = 0;
+                document.getElementById("hotelNotes").value = "";
+            }
+
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+        }
+
+        function saveHotel(e) {
+            e.preventDefault();
+            const idx = parseInt(document.getElementById("hotelIndex").value);
+            const hotelObj = {
+                id: idx >= 0 ? tripData.hotels[idx].id : "h_" + Date.now(),
+                city: document.getElementById("hotelCity").value.trim(),
+                status: document.getElementById("hotelStatus").value,
+                name: document.getElementById("hotelName").value.trim(),
+                checkIn: document.getElementById("hotelCheckIn").value,
+                checkOut: document.getElementById("hotelCheckOut").value,
+                room: document.getElementById("hotelRoom").value.trim(),
+                priceMYR: parseFloat(document.getElementById("hotelPriceMYR").value) || 0,
+                notes: document.getElementById("hotelNotes").value.trim()
+            };
+
+            if (idx >= 0) {
+                tripData.hotels[idx] = hotelObj;
+            } else {
+                tripData.hotels.push(hotelObj);
+            }
+
+            closeModal("hotelModal");
+            saveTripData("酒店住宿信息已更新");
+        }
+
+        function openTransportModal(idx = -1) {
+            const modal = document.getElementById("transportModal");
+            document.getElementById("transportIndex").value = idx;
+
+            if (idx >= 0) {
+                const t = tripData.transports[idx];
+                document.getElementById("transportModalTitle").textContent = "编辑交通与票券";
+                document.getElementById("transDate").value = t.date;
+                document.getElementById("transStatus").value = t.status;
+                document.getElementById("transTitle").value = t.title;
+                document.getElementById("transRoute").value = t.route;
+                document.getElementById("transCostMYR").value = t.costMYR;
+                document.getElementById("transNotes").value = t.notes;
+            } else {
+                document.getElementById("transportModalTitle").textContent = "新增交通与票券";
+                document.getElementById("transDate").value = "2027-01-23";
+                document.getElementById("transStatus").value = "待确认";
+                document.getElementById("transTitle").value = "";
+                document.getElementById("transRoute").value = "";
+                document.getElementById("transCostMYR").value = 0;
+                document.getElementById("transNotes").value = "";
+            }
+
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+        }
+
+        function saveTransport(e) {
+            e.preventDefault();
+            const idx = parseInt(document.getElementById("transportIndex").value);
+            const transObj = {
+                id: idx >= 0 ? tripData.transports[idx].id : "t_" + Date.now(),
+                date: document.getElementById("transDate").value.trim(),
+                status: document.getElementById("transStatus").value,
+                title: document.getElementById("transTitle").value.trim(),
+                route: document.getElementById("transRoute").value.trim(),
+                costMYR: parseFloat(document.getElementById("transCostMYR").value) || 0,
+                notes: document.getElementById("transNotes").value.trim()
+            };
+
+            if (idx >= 0) {
+                tripData.transports[idx] = transObj;
+            } else {
+                tripData.transports.push(transObj);
+            }
+
+            closeModal("transportModal");
+            saveTripData("交通与票券记录已更新");
+        }
+
+        // 初始化渲染
+        window.onload = function() {
+            renderAll();
+        };
+    </script>
+</body>
+</html>
