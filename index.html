@@ -131,6 +131,10 @@
                     class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 whitespace-nowrap transition flex items-center gap-1.5">
                     <span>🏨 住宿与预订管理</span>
                 </button>
+                <button onclick="switchMainTab('map')" id="tab-map"
+                    class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 whitespace-nowrap transition flex items-center gap-1.5">
+                    <span>🗺️ 地图与距离</span>
+                </button>
                 <button onclick="switchMainTab('transport')" id="tab-transport"
                     class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 whitespace-nowrap transition flex items-center gap-1.5">
                     <span>🚄 交通方式与票券记录</span>
@@ -193,6 +197,82 @@
             </div>
         </section>
 
+        <!-- 2.5 地图与距离导航视图 -->
+        <section id="view-map" class="hidden space-y-6">
+            <!-- 顶部说明与自定义路线生成器 -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900">🗺️ Google Maps 路线连接与城际/机场距离总览</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">已预置关西机场、三段酒店与成田机场的真实路线距离及直达导航链接，支持自定义起点终点查询与保存</p>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="px-3 py-1.5 rounded-xl bg-rose-50 text-rose-700 text-xs font-semibold border border-rose-200">
+                            总跨城移动里程：约 638.6 km（全程免新干线）
+                        </span>
+                    </div>
+                </div>
+
+                <!-- 自定义路线查询与添加工具 -->
+                <div class="mt-4 bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+                    <div class="text-xs font-bold text-slate-700 mb-2.5">🔍 自定义起点 → 终点查询（一键生成 Google Maps 导航与距离）</div>
+                    <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+                        <input type="text" id="customMapOrigin" placeholder="起点，例如：浅草新城塚居酒店"
+                            class="sm:col-span-4 text-xs sm:text-sm bg-white border border-slate-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-rose-500">
+                        <input type="text" id="customMapDest" placeholder="终点，例如：秋叶原 Radio会馆"
+                            class="sm:col-span-4 text-xs sm:text-sm bg-white border border-slate-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-rose-500">
+                        <input type="text" id="customMapNote" placeholder="备注/预估距离耗时（选填）"
+                            class="sm:col-span-4 text-xs sm:text-sm bg-white border border-slate-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-rose-500">
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2 mt-3">
+                        <button onclick="openCustomGoogleMaps()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700 transition shadow-sm">
+                            🧭 在 Google Maps 中查看路线与距离
+                        </button>
+                        <button onclick="saveCustomRouteToList()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-900 text-white hover:bg-slate-800 transition">
+                            + 保存到下方路线列表
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 核心节点距离路线卡片列表 -->
+            <div id="mapRoutesContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- 动态渲染核心与自定义路线卡片 -->
+            </div>
+
+            <!-- 交互式 Google Maps 位置预览视窗 -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900">📍 核心酒店与机场周边地图预览</h3>
+                        <p class="text-xs text-slate-500">点击下方按钮切换查看各住宿周边地铁站、便利店与商圈分布</p>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5">
+                        <button onclick="switchMapEmbed('DOYANEN HOTELS BAKURO Osaka')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-orange-100 text-orange-800 hover:bg-orange-200 transition">
+                            🏯 大阪・巴库罗多亚宁
+                        </button>
+                        <button onclick="switchMapEmbed('Hotel Ecclesia Kyoto')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-100 text-purple-800 hover:bg-purple-200 transition">
+                            ⛩️ 京都・埃克利西亚
+                        </button>
+                        <button onclick="switchMapEmbed('Asakusa New City Hotel Tokyo')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-100 text-rose-800 hover:bg-rose-200 transition">
+                            🗼 东京・浅草新城塚居
+                        </button>
+                        <button onclick="switchMapEmbed('Akihabara Electric Town Tokyo')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
+                            🛍️ 东京・秋叶原电器街
+                        </button>
+                    </div>
+                </div>
+                <div class="w-full h-80 sm:h-96 rounded-xl overflow-hidden border border-slate-200 bg-slate-100">
+                    <iframe id="googleMapIframe"
+                        class="w-full h-full border-0"
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"
+                        src="https://maps.google.com/maps?q=Asakusa+New+City+Hotel+Tokyo&output=embed">
+                    </iframe>
+                </div>
+            </div>
+        </section>
+
         <!-- 3. 交通方式与票券记录视图 -->
         <section id="view-transport" class="hidden space-y-6">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
@@ -215,15 +295,21 @@
             <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
                     <div>
-                        <h2 class="text-lg font-bold text-slate-900">旅行预算自动核算中心 (MYR 马币基准)</h2>
-                        <p class="text-xs text-slate-500 mt-0.5">汇率参考：100 JPY ≈ <input type="number" id="exchangeRateInput" step="0.01" value="3.00" onchange="updateExchangeRate()" class="w-14 text-center border border-slate-300 rounded px-1 py-0.5 font-semibold text-slate-700"> MYR（修改任意项目金额将自动重算总额与人均）</p>
+                        <h2 class="text-lg font-bold text-slate-900">旅行预算自动核算中心 (MYR 马币 & JPY 日圆双向实时联动)</h2>
+                        <div class="flex flex-wrap items-center gap-2 mt-1.5">
+                            <span class="text-xs text-slate-600 font-medium">当前汇率设置：<strong>1 MYR =</strong></span>
+                            <input type="number" id="exchangeRateInput" step="0.1" min="0.1" value="34.5"
+                                oninput="updateExchangeRate()" onchange="updateExchangeRate()"
+                                class="w-20 text-center border border-rose-300 bg-rose-50/50 rounded-lg px-2 py-1 text-xs font-bold text-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500">
+                            <span class="text-xs text-slate-600 font-medium"><strong>JPY</strong>（修改汇率或任意金额，马币与日圆总额实时双向重算）</span>
+                        </div>
                     </div>
-                    <div class="flex gap-2">
+                    <div class="flex flex-wrap gap-2">
                         <span class="px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 text-xs font-semibold border border-emerald-200" id="budgetConfirmedSummary">
-                            已确认支出：RM 0
+                            已预订支出：RM 0.00 (¥0)
                         </span>
                         <span class="px-3 py-1.5 rounded-xl bg-amber-50 text-amber-700 text-xs font-semibold border border-amber-200" id="budgetPendingSummary">
-                            待确认预估：RM 0
+                            待确认预估：RM 0.00 (¥0)
                         </span>
                     </div>
                 </div>
@@ -241,8 +327,9 @@
                                 <th class="py-3 px-3">类别</th>
                                 <th class="py-3 px-3">项目名称</th>
                                 <th class="py-3 px-3">状态</th>
-                                <th class="py-3 px-3 text-right">4人总计 (MYR)</th>
-                                <th class="py-3 px-3 text-right">人均分摊 (MYR)</th>
+                                <th class="py-3 px-3 text-right">录入原币 (可改)</th>
+                                <th class="py-3 px-3 text-right">实时折算总计 (MYR / JPY)</th>
+                                <th class="py-3 px-3 text-right">人均分摊 (<span id="budgetTablePax">4</span>人)</th>
                             </tr>
                         </thead>
                         <tbody id="budgetTableBody" class="divide-y divide-slate-100 text-sm">
@@ -301,9 +388,18 @@
                     <label class="block text-xs font-semibold text-slate-700 mb-1">交通方式 / 详细备注 / 餐食亮点</label>
                     <textarea id="actNote" rows="3" placeholder="填写具体路线、预约备注、退税提醒等..." class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2"></textarea>
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">4人总预算估算 (MYR 马币，选填)</label>
-                    <input type="number" id="actCostMYR" step="0.01" min="0" value="0" class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">录入币种</label>
+                        <select id="actCurrency" class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2">
+                            <option value="MYR">MYR (马币 RM)</option>
+                            <option value="JPY">JPY (日圆 ¥)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">4人总预算金额</label>
+                        <input type="number" id="actCost" step="0.01" min="0" value="0" class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2">
+                    </div>
                 </div>
                 <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
                     <button type="button" onclick="closeModal('activityModal')" class="px-4 py-2 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100">取消</button>
@@ -355,9 +451,19 @@
                         <input type="text" id="hotelRoom" placeholder="例如：301房 (4人) / Kin Yip Lam" class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">4人总房费 (MYR)</label>
-                        <input type="number" id="hotelPriceMYR" step="0.01" min="0" required class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2">
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">4人总房费 & 币种</label>
+                        <div class="flex gap-1.5">
+                            <select id="hotelCurrency" class="text-xs border border-slate-300 rounded-xl px-2 py-2 bg-slate-50 font-semibold">
+                                <option value="MYR">MYR</option>
+                                <option value="JPY">JPY</option>
+                            </select>
+                            <input type="number" id="hotelPrice" step="0.01" min="0" required class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2">
+                        </div>
                     </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Google Maps 地点链接 (选填)</label>
+                    <input type="url" id="hotelMapUrl" placeholder="https://www.google.com/maps/..." class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">交通优势 & 周边便利度备注</label>
@@ -403,8 +509,14 @@
                         <input type="text" id="transRoute" placeholder="例如：京都站 → 东京站/新宿" required class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">4人总费用 (MYR)</label>
-                        <input type="number" id="transCostMYR" step="0.01" min="0" required class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2">
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">4人总费用 & 币种</label>
+                        <div class="flex gap-1.5">
+                            <select id="transCurrency" class="text-xs border border-slate-300 rounded-xl px-2 py-2 bg-slate-50 font-semibold">
+                                <option value="MYR">MYR</option>
+                                <option value="JPY">JPY</option>
+                            </select>
+                            <input type="number" id="transCost" step="0.01" min="0" required class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2">
+                        </div>
                     </div>
                 </div>
                 <div>
@@ -434,8 +546,54 @@
                 startDate: "2027-01-17",
                 endDate: "2027-01-27",
                 representative: "Kin Yip Lam",
-                exchangeRateJPYtoMYR: 3.00 // 100 JPY = 3.00 MYR
+                exchangeRate: 34.5 // 1 MYR = 34.5 JPY
             },
+            mapRoutes: [
+                {
+                    id: "r1",
+                    badge: "第1段 · 机场入境",
+                    origin: "关西国际机场 (KIX)",
+                    destination: "大阪巴库罗多亚宁酒店 (DOYANEN HOTELS BAKURO)",
+                    distance: "约 43.7 公里",
+                    duration: "电车 / 驾车约 40 分钟",
+                    mode: "南海电车特急直达新今宫站",
+                    url: "https://www.google.com/maps/dir/%E6%97%A5%E6%9C%AC,+%E5%A4%A7%E9%98%AA%E5%BA%9C%E6%B3%89%E4%BD%90%E9%87%8E%E5%B8%82%E6%B3%89%E5%B7%9E%E7%A9%BA%E6%B8%AF%E5%8C%971%E7%95%AA%E5%9C%B0,+%E5%85%B3%E8%A5%BF%E5%9B%BD%E9%99%85%E6%9C%BA%E5%9C%BA/DOYANEN+HOTELS+BAKURO,+%EF%BC%92%E4%B8%81%E7%9B%AE-%EF%BC%98-12+%E8%90%A9%E4%B9%8B%E8%8C%B6%E5%B1%8B,+%E8%A5%BF%E6%88%90%E5%8C%BA+%E5%A4%A7%E9%98%AA%E5%B8%82+%E5%A4%A7%E9%98%AA%E5%BA%9C,+Japan/data=!4m14!4m13!1m5!1m1!19sChIJ9_rNIxO5AGARiI-QjZ-ncfE!2m2!1d135.23660189999998!2d34.431999399999995!1m5!1m1!19sChIJwR6btondAGAR3_zKQ27RwqA!2m2!1d135.4996177!2d34.646571699999996!3e3?entry=gemini&utm_source=gemini&utm_campaign=gem-default",
+                    note: "下飞机出关后直接搭乘南海电车至新今宫站，步行几分钟即达酒店放行李。"
+                },
+                {
+                    id: "r2",
+                    badge: "第2段 · 关西跨城",
+                    origin: "大阪巴库罗多亚宁酒店 (DOYANEN HOTELS BAKURO)",
+                    destination: "京都埃克利西亚酒店 (Hotel Ecclesia)",
+                    distance: "约 59.4 公里",
+                    duration: "公共交通约 1 小时 23 分钟（驾车约 1 小时）",
+                    mode: "JR / 阪急电铁转乘至二条站",
+                    url: "https://www.google.com/maps/dir/DOYANEN+HOTELS+BAKURO,+%EF%BC%92%E4%B8%81%E7%9B%AE-%EF%BC%98-12+%E8%90%A9%E4%B9%8B%E8%8C%B6%E5%B1%8B,+%E8%A5%BF%E6%88%90%E5%8C%BA+%E5%A4%A7%E9%98%AA%E5%B8%82+%E5%A4%A7%E9%98%AA%E5%BA%9C,+Japan/Hotel+Ecclesia,+23-23+%E8%A5%BF%E3%83%8E%E4%BA%AC%E6%B0%B8%E6%9C%AC%E7%94%BA,+%E4%B8%AD%E4%BA%AC%E5%8C%BA+%E4%BA%AC%E9%83%BD%E5%B8%82+%E4%BA%AC%E9%83%BD%E5%BA%9C,+Japan/data=!4m14!4m13!1m5!1m1!19sChIJwR6btondAGAR3_zKQ27RwqA!2m2!1d135.4996177!2d34.646571699999996!1m5!1m1!19sChIJ38BBF5wHAWARLw1whCnUXEQ!2m2!1d135.7379526!2d35.0112357!3e3?entry=gemini&utm_source=gemini&utm_campaign=gem-default",
+                    note: "建议 1 月 20 日上午 10:00 退房后错开早高峰，携行李搭乘 JR 前往京都。"
+                },
+                {
+                    id: "r3",
+                    badge: "第3段 · 跨夜巴士",
+                    origin: "京都埃克利西亚酒店 (Hotel Ecclesia)",
+                    destination: "东京浅草新城塚居酒店 (New City Hotel 新城ホテル)",
+                    distance: "约 469 公里",
+                    duration: "夜巴移动约 7 小时 46 分钟（不含新干线）",
+                    mode: "京都站八条口 → 东京跨夜巴士",
+                    url: "https://www.google.com/maps/dir/Hotel+Ecclesia,+23-23+%E8%A5%BF%E3%83%8E%E4%BA%AC%E6%B0%B8%E6%9C%AC%E7%94%BA,+%E4%B8%AD%E4%BA%AC%E5%8C%BA+%E4%BA%AC%E9%83%BD%E5%B8%82+%E4%BA%AC%E9%83%BD%E5%BA%9C,+Japan/%E6%97%A5%E6%9C%AC,+%E6%9D%B1%E4%BA%AC%E9%83%BD%E5%8F%B0%E6%9D%B1%E5%8C%BA%E6%B5%85%E8%8D%89%EF%BC%96%E4%B8%81%E7%9B%AE%EF%BC%93%EF%BC%90%E2%88%9211,+New+City+Hotel+%E6%96%B0%E5%9F%8E%E3%83%9B%E3%83%86%E3%83%AB/data=!4m14!4m13!1m5!1m1!19sChIJ38BBF5wHAWARLw1whCnUXEQ!2m2!1d135.7379526!2d35.0112357!1m5!1m1!19sChIJ6QepQ3yPGGARvRtlDiYIo4k!2m2!1d139.799817!2d35.718574!3e3?entry=gemini&utm_source=gemini&utm_campaign=gem-default",
+                    note: "1 月 22 日晚间由京都站八条口出发，省去一晚住宿费并直达东京。"
+                },
+                {
+                    id: "r4",
+                    badge: "第4段 · 机场直达返程",
+                    origin: "东京浅草新城塚居酒店 (New City Hotel 新城ホテル)",
+                    destination: "成田国际机场 (NRT)",
+                    distance: "约 66.5 公里",
+                    duration: "一车直达约 52–55 分钟",
+                    mode: "都营浅草线直通京成Access特急",
+                    url: "https://www.google.com/maps/dir/%E6%97%A5%E6%9C%AC,+%E6%9D%B1%E4%BA%AC%E9%83%BD%E5%8F%B0%E6%9D%B1%E5%8C%BA%E6%B5%85%E8%8D%89%EF%BC%96%E4%B8%81%E7%9B%AE%EF%BC%93%EF%BC%90%E2%88%9211,+New+City+Hotel+%E6%96%B0%E5%9F%8E%E3%83%9B%E3%83%86%E3%83%AB/%E6%97%A5%E6%9C%AC,+%E5%8D%83%E8%91%89%E7%9C%8C%E6%88%90%E7%94%B0%E5%B8%82%E5%8F%A4%E8%BE%BC1-1,+%E6%88%90%E7%94%B0%E5%9B%BD%E9%99%85%E6%9C%BA%E5%9C%BA/data=!4m14!4m13!1m5!1m1!19sChIJ6QepQ3yPGGARvRtlDiYIo4k!2m2!1d139.799817!2d35.718574!1m5!1m1!19sChIJVze90XnzImARoRp3YqEpbtU!2m2!1d140.3843215!2d35.770178!3e3?entry=gemini&utm_source=gemini&utm_campaign=gem-default",
+                    note: "4 人携带满载手办的 30kg 大行李箱无需在车站换乘，浅草站上车直达航站楼！"
+                }
+            ],
             hotels: [
                 {
                     id: "h1",
@@ -444,9 +602,11 @@
                     checkIn: "2027-01-18",
                     checkOut: "2027-01-20",
                     room: "四人间豪华房・1间 (4张单人床)｜订单号: 1658116478607483",
-                    priceMYR: 359.62,
+                    currency: "MYR",
+                    price: 359.62,
                     status: "已预订",
-                    notes: "距南海电车/JR新今宫站、动物园前站步行即达。周边有24小时MEGA堂吉诃德、玉出超市，去日本桥动漫街非常近。"
+                    mapUrl: "https://www.google.com/maps/place//data=!4m2!3m1!19sChIJwR6btondAGAR3_zKQ27RwqA",
+                    notes: "距南海电车/JR新今宫站、动物园前站步行即达（距关西机场43.7km）。周边有24小时MEGA堂吉诃德、玉出超市及木津卸卖市场。"
                 },
                 {
                     id: "h2",
@@ -455,9 +615,11 @@
                     checkIn: "2027-01-20",
                     checkOut: "2027-01-22",
                     room: "基础四人房・1间｜订单号: 1658116419997445",
-                    priceMYR: 410.14,
+                    currency: "MYR",
+                    price: 410.14,
                     status: "已预订",
-                    notes: "靠近JR二条站与地铁东西线，前往岚山、京都站、河原町商圈顺畅。周边有生鲜超市、MUJI及便利店，治安极佳。"
+                    mapUrl: "https://www.google.com/maps/place//data=!4m2!3m1!19sChIJ38BBF5wHAWARLw1whCnUXEQ",
+                    notes: "靠近JR二条站与地铁东西线（距大阪酒店59.4km），前往岚山、京都站、河原町商圈顺畅。周边有生鲜超市、MUJI及便利店。"
                 },
                 {
                     id: "h3",
@@ -466,9 +628,11 @@
                     checkIn: "2027-01-23",
                     checkOut: "2027-01-27",
                     room: "整套公寓 301房 (2单人床+2日式床垫)｜订单号: 1658116519687522",
-                    priceMYR: 1688.58,
+                    currency: "MYR",
+                    price: 1688.58,
                     status: "已预订",
-                    notes: "平层大公寓方便4人摊开30kg行李箱打包手办！步行至浅草站可搭都营浅草线直通京成Access特急【一车直达成田机场】，免换车搬行李。"
+                    mapUrl: "https://www.google.com/maps/place//data=!4m2!3m1!19sChIJ6QepQ3yPGGARvRtlDiYIo4k",
+                    notes: "平层大公寓方便4人摊开30kg行李箱打包手办！步行至浅草站可搭都营浅草线直通京成Access特急【一车直达成田机场（66.5km）】。"
                 }
             ],
             transports: [
@@ -477,7 +641,8 @@
                     date: "2027-01-17 23:00 → 01-18 06:25",
                     title: "去程国际航班 (吉隆坡 KUL → 大阪关西 KIX)",
                     route: "KUL → KIX (红眼直飞)",
-                    costMYR: 3200.00,
+                    currency: "MYR",
+                    cost: 3200.00,
                     status: "已预订",
                     notes: "17日晚起飞，18日清晨06:25抵达关西机场。出关后搭乘南海电车特急直达新今宫站前往酒店寄存行李。"
                 },
@@ -486,16 +651,18 @@
                     date: "2027-01-18 ~ 01-27",
                     title: "交通IC卡 (ICOCA / Suica 手机绑定或实体卡)",
                     route: "关西 & 关东市区地铁/JR通用",
-                    costMYR: 600.00,
+                    currency: "JPY",
+                    cost: 20000,
                     status: "待确认",
-                    notes: "建议每人提前在 Apple Wallet 绑定 Suica/ICOCA 或在关西机场购买 ICOCA，4人每人预充约 5,000 日元。"
+                    notes: "建议每人提前在 Apple Wallet 绑定 Suica/ICOCA 或在关西机场购买 ICOCA，4人每人预充 5,000 日圆（合计 20,000 JPY）。"
                 },
                 {
                     id: "t3",
                     date: "2027-01-20 上午",
                     title: "大阪 → 京都 城际电车 (JR京都线 / 阪急电铁)",
-                    route: "大阪市区 → 京都二条/河原町",
-                    costMYR: 120.00,
+                    route: "大阪新今宫 → 京都二条 (约59.4km)",
+                    currency: "JPY",
+                    cost: 4200,
                     status: "待确认",
                     notes: "4人携带行李建议避开早高峰（08:00-09:00），搭乘JR新快速到京都站转山阴本线至二条站。"
                 },
@@ -503,8 +670,9 @@
                     id: "t4",
                     date: "2027-01-22 深夜 → 01-23 清晨",
                     title: "京都 → 东京 跨夜高速巴士 (Willer Express 等)",
-                    route: "京都站八条口 → 东京站/新宿/上野",
-                    costMYR: 960.00,
+                    route: "京都站八条口 → 东京站/新宿/上野 (约469km)",
+                    currency: "JPY",
+                    cost: 32000,
                     status: "待确认",
                     notes: "需预订支持每人1件大行李箱寄存的班次（注意核对行李尺寸限制）。抵达东京后先前往浅草酒店寄存行李。"
                 },
@@ -512,17 +680,19 @@
                     id: "t5",
                     date: "2027-01-27 返程日",
                     title: "浅草 → 成田机场 直达电车 (都营浅草线直通京成Access特急)",
-                    route: "浅草站 → 成田国际机场 (NRT)",
-                    costMYR: 165.00,
+                    route: "浅草站 → 成田国际机场 NRT (约66.5km)",
+                    currency: "JPY",
+                    cost: 5480,
                     status: "待确认",
-                    notes: "无需转车！确认列车方向为【成田空港行 (Access Express)】，约55分钟直达，适合4人携带满载战利品的30kg行李箱。"
+                    notes: "无需转车！确认列车方向为【成田空港行 (Access Express)】，约52-55分钟直达，4人每人约 1,370 JPY。"
                 },
                 {
                     id: "t6",
                     date: "2027-01-27 返程",
                     title: "回程国际航班 (东京成田 NRT → 吉隆坡 KUL)",
                     route: "NRT → KUL",
-                    costMYR: 3400.00,
+                    currency: "MYR",
+                    cost: 3400.00,
                     status: "已预订",
                     notes: "回程每人务必确认已加购充足托运行李额（建议每人25kg-30kg以容纳手办模型盒）。"
                 }
@@ -536,8 +706,8 @@
                     stayHotel: "夜宿航班上 (KUL → KIX)",
                     summary: "吉隆坡国际机场集合，搭乘 23:00 红眼航班飞往大阪关西",
                     items: [
-                        { time: "20:00", type: "交通/移动", title: "抵达吉隆坡国际机场 (KUL) 办理登机", status: "已预订", costMYR: 0, note: "4人检查护照有效期（需6个月以上）、Visit Japan Web 入境二维码截屏、随身充电宝与保暖外套。" },
-                        { time: "23:00", type: "交通/移动", title: "航班起飞前往大阪关西机场 (KIX)", status: "已预订", costMYR: 0, note: "机上补眠，准备迎接次日清晨抵达日本。" }
+                        { time: "20:00", type: "交通/移动", title: "抵达吉隆坡国际机场 (KUL) 办理登机", status: "已预订", currency: "MYR", cost: 0, note: "4人检查护照有效期（需6个月以上）、Visit Japan Web 入境二维码截屏、随身充电宝与保暖外套。" },
+                        { time: "23:00", type: "交通/移动", title: "航班起飞前往大阪关西机场 (KIX)", status: "已预订", currency: "MYR", cost: 0, note: "机上补眠，准备迎接次日清晨抵达日本。" }
                     ]
                 },
                 {
@@ -546,12 +716,12 @@
                     weekday: "周一",
                     city: "大阪",
                     stayHotel: "巴库罗多亚宁酒店 (新今宫)",
-                    summary: "清晨抵达关西机场 → 新今宫放行李 → 日本桥动漫街扫货 → 道顿堀大牧场烤肉",
+                    summary: "清晨抵达关西机场 → 新今宫放行李 → 木津卸卖市场海鲜 → 日本桥动漫街 → 大牧场烤肉",
                     items: [
-                        { time: "06:25", type: "交通/移动", title: "抵达大阪关西机场 (KIX) & 搭乘南海电车", status: "已预订", costMYR: 150, note: "出关后购买/充值ICOCA，搭乘南海电铁直达【新今宫站】，步行至巴库罗多亚宁酒店寄存行李。" },
-                        { time: "11:30", type: "餐食/烤肉", title: "黑门市场 / 难波周边午餐", status: "待确认", costMYR: 280, note: "品尝大阪章鱼烧、大阪烧或拉面，补充体力。" },
-                        { time: "14:00", type: "景点/逛街", title: "大阪日本桥 Den Den Town 二次元圣地巡礼", status: "已预订", costMYR: 0, note: "逛 Animate、骏河屋、Kotobukiya 寿屋、Jungle 淘中古手办与游戏周边（记得随身带护照原件满5,500日元免税）。" },
-                        { time: "19:00", type: "餐食/烤肉", title: "晚餐：焼肉屋 大牧場 (道顿堀/日本桥店)", status: "待确认", costMYR: 850, note: "正宗神户牛+黑毛和牛+猪肉无限量烤肉放题！建议提前线上预约晚餐时段。" }
+                        { time: "06:25", type: "交通/移动", title: "抵达大阪关西机场 (KIX) & 搭乘南海电车 (43.7km / 40分钟)", status: "已预订", currency: "JPY", cost: 4800, note: "出关后购买/充值ICOCA，搭乘南海电铁直达【新今宫站】，步行至巴库罗多亚宁酒店寄存行李（已通知酒店18日早晨抵达）。" },
+                        { time: "10:30", type: "餐食/烤肉", title: "木津卸卖市场（木津 魚市食堂）超厚切海鲜丼早午餐", status: "待确认", currency: "JPY", cost: 9000, note: "距酒店步行仅约10分钟！本地批发市场不宰游客，推荐鱼市食堂满溢海鲜丼与现烤鳗鱼饭（营业至13:00）。" },
+                        { time: "14:00", type: "景点/逛街", title: "大阪日本桥 Den Den Town 二次元圣地巡礼", status: "已预订", currency: "JPY", cost: 0, note: "逛 Animate、骏河屋、Kotobukiya 寿屋、Jungle 淘中古手办与游戏周边（记得随身带护照原件满5,500日元免税）。" },
+                        { time: "19:00", type: "餐食/烤肉", title: "晚餐：焼肉屋 大牧場 (道顿堀/日本桥店)", status: "待确认", currency: "JPY", cost: 28000, note: "正宗神户牛+黑毛和牛+猪肉无限量烤肉放题！建议提前线上预约晚餐时段。" }
                     ]
                 },
                 {
@@ -560,11 +730,11 @@
                     weekday: "周二",
                     city: "大阪",
                     stayHotel: "巴库罗多亚宁酒店 (新今宫)",
-                    summary: "大阪经典地标打卡（大阪城/梅田/心斋桥）与药妆补给",
+                    summary: "大阪经典地标打卡（大阪城/梅田二次元旗舰店/心斋桥）与新世界海鲜/药妆补给",
                     items: [
-                        { time: "09:30", type: "景点/逛街", title: "大阪城公园 & 天守阁外观打卡", status: "待确认", costMYR: 80, note: "冬季晨间空气清冽，适合4人合影留念。" },
-                        { time: "13:30", type: "景点/逛街", title: "梅田商圈 (HEP FIVE / Nintendo OSAKA / 宝可梦中心)", status: "待确认", costMYR: 0, note: "大丸梅田店13楼有任天堂官方旗舰店、宝可梦中心与CAPCOM商店，动漫迷必逛。" },
-                        { time: "18:30", type: "餐食/烤肉", title: "心斋桥 / 道顿堀夜景 & 自由觅食", status: "待确认", costMYR: 350, note: "打卡固力果跑跑人招牌，回酒店前可顺路逛新世界24小时 MEGA 堂吉诃德。" }
+                        { time: "09:30", type: "景点/逛街", title: "大阪城公园 & 天守阁外观打卡", status: "待确认", currency: "JPY", cost: 2400, note: "冬季晨间空气清冽，适合4人合影留念。" },
+                        { time: "13:30", type: "景点/逛街", title: "梅田商圈 (Nintendo OSAKA / 宝可梦中心 / 函馆函太郎寿司)", status: "待确认", currency: "JPY", cost: 11000, note: "大丸梅田店13楼有任天堂旗舰店与宝可梦中心；午餐可在 Grand Front Osaka 7楼吃北海道直送【函馆函太郎】回转寿司。" },
+                        { time: "18:30", type: "餐食/烤肉", title: "心斋桥 / 道顿堀夜景 & 矶丸水产海鲜烧烤", status: "待确认", currency: "JPY", cost: 12000, note: "打卡固力果跑跑人招牌，品尝24小时明码标价的矶丸水产蟹味噌甲罗烧，回酒店前逛新世界MEGA堂吉诃德。" }
                     ]
                 },
                 {
@@ -573,12 +743,12 @@
                     weekday: "周三",
                     city: "京都",
                     stayHotel: "埃克利西亚酒店 (京都二条)",
-                    summary: "大阪退房移动至京都 → 锦市场 → 清水寺与二年坂三年坂古街漫步",
+                    summary: "大阪退房移动至京都 (59.4km) → 锦市场 → 清水寺与二年坂三年坂古街漫步",
                     items: [
-                        { time: "10:00", type: "住宿/入住", title: "巴库罗多亚宁酒店退房 & 前往京都", status: "已预订", costMYR: 0, note: "搭乘JR前往京都，先到【埃克利西亚酒店】寄存大件行李。" },
-                        { time: "12:30", type: "餐食/烤肉", title: "锦市场美食街午餐", status: "待确认", costMYR: 260, note: "边走边吃豆乳甜甜圈、玉子烧、海鲜串烧与抹茶甜品。" },
-                        { time: "14:30", type: "景点/逛街", title: "清水寺 → 二年坂・三年坂 → 祇园花见小路", status: "待确认", costMYR: 100, note: "感受京都古都风情，下午光线最适合拍照，顺路逛京都特色伴手礼小店。" },
-                        { time: "19:00", type: "餐食/烤肉", title: "晚餐备选：肉屋の台所 (京都木屋町店) 神户牛+猪肉放题", status: "待确认", costMYR: 950, note: "若想再吃神户牛+猪肉自助，可预约木屋町店『神户牛全套放题』，或改吃京都拉面小路。" }
+                        { time: "10:00", type: "住宿/入住", title: "巴库罗多亚宁酒店退房 & 移动前往京都埃克利西亚酒店", status: "已预订", currency: "JPY", cost: 0, note: "全程约59.4公里（约1小时23分钟），抵达京都二条后先到【埃克利西亚酒店】寄存大件行李。" },
+                        { time: "12:30", type: "餐食/烤肉", title: "锦市场美食街午餐", status: "待确认", currency: "JPY", cost: 8500, note: "边走边吃豆乳甜甜圈、玉子烧、海鲜串烧与抹茶甜品。" },
+                        { time: "14:30", type: "景点/逛街", title: "清水寺 → 二年坂・三年坂 → 祇园花见小路", status: "待确认", currency: "JPY", cost: 3200, note: "感受京都古都风情，下午光线最适合拍照，顺路逛京都特色伴手礼小店。" },
+                        { time: "19:00", type: "餐食/烤肉", title: "晚餐：肉屋の台所 (京都木屋町店) 神户牛+猪肉放题", status: "待确认", currency: "JPY", cost: 34000, note: "预约木屋町店『全150种神户牛放题套餐』，同时包含神户牛拼盘与多种猪肉（五花肉/猪颈肉/猪舌）畅吃！" }
                     ]
                 },
                 {
@@ -589,9 +759,9 @@
                     stayHotel: "埃克利西亚酒店 (京都二条)",
                     summary: "伏见稻荷大社千本鸟居 → 岚山竹林与渡月桥半日游",
                     items: [
-                        { time: "08:30", type: "景点/逛街", title: "伏见稻荷大社（千本鸟居）", status: "待确认", costMYR: 0, note: "建议早点出发避开旅行团人潮，拍摄红彤彤的千本鸟居。" },
-                        { time: "13:00", type: "景点/逛街", title: "岚山风景区（渡月桥、竹林小径、天龙寺周边）", status: "待确认", costMYR: 240, note: "从二条站搭乘JR山阴本线直达嵯峨岚山站仅需10分钟，交通极其顺路！" },
-                        { time: "18:30", type: "餐食/烤肉", title: "四条河原町商圈晚餐 & 购物", status: "待确认", costMYR: 350, note: "河原町OPA、高岛屋及周边动漫店自由活动。" }
+                        { time: "08:30", type: "景点/逛街", title: "伏见稻荷大社（千本鸟居）", status: "待确认", currency: "JPY", cost: 0, note: "建议早点出发避开旅行团人潮，拍摄红彤彤的千本鸟居。" },
+                        { time: "13:00", type: "景点/逛街", title: "岚山风景区（渡月桥、竹林小径、天龙寺周边）", status: "待确认", currency: "JPY", cost: 8000, note: "从二条站搭乘JR山阴本线直达嵯峨岚山站仅需10分钟，交通极其顺路！" },
+                        { time: "18:30", type: "餐食/烤肉", title: "四条河原町商圈晚餐 & 购物", status: "待确认", currency: "JPY", cost: 11000, note: "河原町OPA、高岛屋及周边动漫店自由活动。" }
                     ]
                 },
                 {
@@ -599,13 +769,13 @@
                     date: "2027-01-22",
                     weekday: "周五",
                     city: "夜巴移动",
-                    stayHotel: "跨夜高速巴士 (京都 → 东京)",
+                    stayHotel: "跨夜高速巴士 (京都 → 东京 469km)",
                     summary: "京都酒店退房寄存行李 → 宇治/市区自由活动 → 深夜搭乘夜巴赴东京",
                     items: [
-                        { time: "10:00", type: "住宿/入住", title: "埃克利西亚酒店退房 & 寄存行李", status: "已预订", costMYR: 0, note: "白天轻装出行，晚上取回行李前往京都站八条口乘车。" },
-                        { time: "11:30", type: "景点/逛街", title: "宇治抹茶半日游 或 京都市区补漏逛街", status: "待确认", costMYR: 220, note: "可前往宇治平等院表参道品尝正宗抹茶圣代，或留在京都站周边逛伊势丹/Yodobashi。" },
-                        { time: "20:00", type: "餐食/烤肉", title: "京都站八条口晚餐（推荐：但馬屋 PREMIUM 神户牛寿喜烧）", status: "待确认", costMYR: 880, note: "上夜巴前吃一顿暖呼呼的神户牛+国产猪肉寿喜烧放题，饱餐后方便车上入睡。" },
-                        { time: "23:00", type: "交通/移动", title: "京都站八条口集合，搭乘跨夜巴士前往东京", status: "待确认", costMYR: 0, note: "提前20分钟抵达对应乘车月台，确认4件大行李顺利放入车底行李舱。" }
+                        { time: "10:00", type: "住宿/入住", title: "埃克利西亚酒店退房 & 寄存行李", status: "已预订", currency: "JPY", cost: 0, note: "白天轻装出行，晚上取回行李前往京都站八条口乘车。" },
+                        { time: "11:30", type: "景点/逛街", title: "宇治抹茶半日游 或 京都市区补漏逛街", status: "待确认", currency: "JPY", cost: 7500, note: "可前往宇治平等院表参道品尝正宗抹茶圣代，或留在京都站周边逛伊势丹/Yodobashi。" },
+                        { time: "20:00", type: "餐食/烤肉", title: "京都站八条口晚餐：但馬屋 PREMIUM 神户牛+猪肉寿喜烧放题", status: "待确认", currency: "JPY", cost: 30000, note: "就在京都站八条口旁！上夜巴前吃一顿暖呼呼的神户牛+国产猪肉寿喜烧放题与哈根达斯。" },
+                        { time: "23:00", type: "交通/移动", title: "京都站八条口集合，搭乘跨夜巴士前往东京 (469km / 约7h46m)", status: "待确认", currency: "JPY", cost: 0, note: "提前20分钟抵达对应乘车月台，确认4件大行李顺利放入车底行李舱。" }
                     ]
                 },
                 {
@@ -616,10 +786,10 @@
                     stayHotel: "新城塚居酒店 (浅草 301房)",
                     summary: "清晨抵达东京 → 浅草放行李 → 浅草寺雷门 → 秋叶原二次元大本营首战",
                     items: [
-                        { time: "07:30", type: "住宿/入住", title: "夜巴抵达东京 & 前往浅草新城塚居酒店寄存行李", status: "已预订", costMYR: 0, note: "先联系房东确认301房是否可提前寄存行李，随后在浅草站周边吃早餐洗漱。" },
-                        { time: "10:30", type: "景点/逛街", title: "浅草寺・雷门・仲见世通漫步", status: "待确认", costMYR: 150, note: "酒店步行530米即达浅草寺，求签、吃人形烧并远眺晴空塔。" },
-                        { time: "14:00", type: "景点/逛街", title: "秋叶原电器街 & 手办模型深度扫货 (第一回合)", status: "待确认", costMYR: 0, note: "重点攻略 Radio会馆、AmiAmi、Mandarake、Volks、Animate。注意各大店铺免税柜台截止时间（通常20:00）。" },
-                        { time: "19:30", type: "餐食/烤肉", title: "秋叶原/上野和牛烤肉（推荐：肉屋横丁 或 肉屋の台所上野店）", status: "待确认", costMYR: 980, note: "大口享用黑毛和牛/神户牛与猪肉自助，回浅草公寓整理首日战利品。" }
+                        { time: "07:30", type: "住宿/入住", title: "夜巴抵达东京 & 前往浅草新城塚居酒店寄存行李", status: "已预订", currency: "JPY", cost: 0, note: "先联系房东确认301房是否可提前寄存行李，随后在浅草站周边吃早餐洗漱。" },
+                        { time: "10:30", type: "景点/逛街", title: "浅草寺・雷门・仲见世通漫步", status: "待确认", currency: "JPY", cost: 5000, note: "酒店步行530米即达浅草寺，求签、吃人形烧并远眺晴空塔。" },
+                        { time: "14:00", type: "景点/逛街", title: "秋叶原电器街 & 手办模型深度扫货 (第一回合)", status: "待确认", currency: "JPY", cost: 0, note: "重点攻略 Radio会馆、AmiAmi、Mandarake、Volks、Animate。注意各大店铺免税柜台截止时间（通常20:00）。" },
+                        { time: "19:30", type: "餐食/烤肉", title: "晚餐：肉屋の台所 上野店 / 肉屋横丁秋叶原 (神户牛+猪肉放题)", status: "待确认", currency: "JPY", cost: 34000, note: "大口享用神户牛/黑毛和牛与猪肉自助，回浅草公寓整理首日战利品。" }
                     ]
                 },
                 {
@@ -630,8 +800,8 @@
                     stayHotel: "新城塚居酒店 (浅草 301房)",
                     summary: "池袋乙女路/Sunshine City 动漫城 → 新宿歌舞伎町夜景",
                     items: [
-                        { time: "10:30", type: "景点/逛街", title: "池袋动漫圣地巡礼 (Animate池袋总店 & Sunshine City)", status: "待确认", costMYR: 0, note: "全球最大Animate旗舰店、宝可梦中心Mega Tokyo、万代扭蛋总店集中在此，谷子与周边极全。" },
-                        { time: "16:30", type: "景点/逛街", title: "新宿商圈（哥斯拉头雕、3D巨幕猫、堂吉诃德）", status: "待确认", costMYR: 320, note: "体验东京最繁华的商业中心，晚间在思出横丁或新宿西口享用烧鸟/拉面。" }
+                        { time: "10:30", type: "景点/逛街", title: "池袋动漫圣地巡礼 (Animate池袋总店 & Sunshine City)", status: "待确认", currency: "JPY", cost: 0, note: "全球最大Animate旗舰店、宝可梦中心Mega Tokyo、万代扭蛋总店集中在此，谷子与周边极全。" },
+                        { time: "16:30", type: "景点/逛街", title: "新宿商圈（哥斯拉头雕、3D巨幕猫、堂吉诃德）", status: "待确认", currency: "JPY", cost: 10000, note: "体验东京最繁华的商业中心，晚间在思出横丁或新宿西口享用烧鸟/拉面。" }
                     ]
                 },
                 {
@@ -640,10 +810,10 @@
                     weekday: "周一",
                     city: "东京",
                     stayHotel: "新城塚居酒店 (浅草 301房)",
-                    summary: "河口湖富士山一日游 或 涩谷/原宿/中野百老汇深度逛",
+                    summary: "河口湖富士山一日游 或 中野百老汇中古淘货 + 涩谷 PARCO",
                     items: [
-                        { time: "09:00", type: "景点/逛街", title: "备选A：富士山河口湖一日游 / 备选B：中野百老汇中古淘货", status: "待确认", costMYR: 600, note: "若天气晴朗强烈推荐去河口湖看冬季雪顶富士山；若专注动漫怀旧手办则去中野百老汇（Nakano Broadway）。" },
-                        { time: "17:00", type: "景点/逛街", title: "涩谷 PARCO (Nintendo TOKYO / CAPCOM / JUMP SHOP) & 十字路口", status: "待确认", costMYR: 350, note: "涩谷PARCO 6楼是游戏动漫官方店集合地，非常适合补齐限定商品。" }
+                        { time: "09:00", type: "景点/逛街", title: "备选A：富士山河口湖一日游 / 备选B：中野百老汇中古淘货", status: "待确认", currency: "JPY", cost: 20000, note: "若天气晴朗强烈推荐去河口湖看冬季雪顶富士山；若专注动漫怀旧手办则去中野百老汇（Nakano Broadway）。" },
+                        { time: "17:00", type: "景点/逛街", title: "涩谷 PARCO (Nintendo TOKYO / CAPCOM / JUMP SHOP) & 十字路口", status: "待确认", currency: "JPY", cost: 11000, note: "涩谷PARCO 6楼是游戏动漫官方店集合地，非常适合补齐限定商品。" }
                     ]
                 },
                 {
@@ -654,8 +824,8 @@
                     stayHotel: "新城塚居酒店 (浅草 301房)",
                     summary: "东京最后冲刺补货（秋叶原/上野阿美横丁）& 回公寓大装箱打包",
                     items: [
-                        { time: "10:30", type: "景点/逛街", title: "上野阿美横丁药妆伴手礼 & 秋叶原最终补漏", status: "待确认", costMYR: 300, note: "在二木的菓子、多庆屋、OS Drug 买齐零食与药妆，把未买到的手办一次收齐。" },
-                        { time: "19:00", type: "餐食/烤肉", title: "东京最后一晚庆功宴（但馬屋秋叶原店 或 烧肉放题）", status: "待确认", costMYR: 900, note: "吃完回浅草301公寓进行最终称重与打包：拆盒折叠或气泡膜保护手办，确保4个行李箱不超重。" }
+                        { time: "10:30", type: "景点/逛街", title: "上野阿美横丁药妆伴手礼 & 秋叶原最终补漏", status: "待确认", currency: "JPY", cost: 10000, note: "在二木的菓子、多庆屋、OS Drug 买齐零食与药妆，把未买到的手办一次收齐。" },
+                        { time: "19:00", type: "餐食/烤肉", title: "东京最后一晚庆功宴：但馬屋 Yodobashi-AKIBA (神户牛+猪肉放题)", status: "待确认", currency: "JPY", cost: 30000, note: "就在秋叶原站旁8楼！吃完回浅草301公寓进行最终称重与打包，确保4个30kg行李箱不超重。" }
                     ]
                 },
                 {
@@ -664,11 +834,11 @@
                     weekday: "周三",
                     city: "东京",
                     stayHotel: "返程回国",
-                    summary: "浅草退房 → 搭乘直达电车前往成田机场 (NRT) → 飞返吉隆坡",
+                    summary: "浅草退房 → 搭乘直达电车前往成田机场 (66.5km / 55分钟) → 飞返吉隆坡",
                     items: [
-                        { time: "09:30", type: "住宿/入住", title: "浅草新城塚居酒店退房 & 拖行李前往浅草站", status: "已预订", costMYR: 0, note: "检查护照、免税小票、充电器与所有手办战利品无遗漏。" },
-                        { time: "10:30", type: "交通/移动", title: "浅草站搭乘【都营浅草线直通京成Access特急】直达成田机场", status: "待确认", costMYR: 0, note: "一车直达无需换乘！建议提前至少3小时抵达成田机场办理退税核验与行李托运。" },
-                        { time: "下午", type: "交通/移动", title: "成田机场免税店最后采购 & 登机返程吉隆坡", status: "已预订", costMYR: 200, note: "购买白色恋人、Tokyo Banana、Royce生巧等机场伴手礼，圆满结束日本4人之旅！" }
+                        { time: "09:30", type: "住宿/入住", title: "浅草新城塚居酒店退房 & 拖行李前往浅草站", status: "已预订", currency: "JPY", cost: 0, note: "检查护照、免税小票、充电器与所有手办战利品无遗漏。" },
+                        { time: "10:30", type: "交通/移动", title: "浅草站搭乘【都营浅草线直通京成Access特急】直达成田机场 (66.5km)", status: "待确认", currency: "JPY", cost: 0, note: "一车直达无需换乘！约52-55分钟抵达成田机场办理退税核验与行李托运。" },
+                        { time: "下午", type: "交通/移动", title: "成田机场免税店最后采购 & 登机返程吉隆坡", status: "已预订", currency: "JPY", cost: 7000, note: "购买白色恋人、Tokyo Banana、Royce生巧等机场伴手礼，圆满结束日本4人之旅！" }
                     ]
                 }
             ]
@@ -682,10 +852,13 @@
         let selectedDayNum = null;
 
         function loadTripData() {
-            const saved = localStorage.getItem("japan_4pax_trip_2027_v1");
+            const saved = localStorage.getItem("japan_4pax_trip_2027_v2");
             if (saved) {
                 try {
-                    return JSON.parse(saved);
+                    const parsed = JSON.parse(saved);
+                    if (!parsed.mapRoutes) parsed.mapRoutes = JSON.parse(JSON.stringify(DEFAULT_TRIP_DATA.mapRoutes));
+                    if (!parsed.settings.exchangeRate) parsed.settings.exchangeRate = 34.5;
+                    return parsed;
                 } catch (e) {
                     console.error("数据解析失败，使用默认数据", e);
                 }
@@ -694,7 +867,7 @@
         }
 
         function saveTripData(showToastMsg = "已自动保存并更新总览") {
-            localStorage.setItem("japan_4pax_trip_2027_v1", JSON.stringify(tripData));
+            localStorage.setItem("japan_4pax_trip_2027_v2", JSON.stringify(tripData));
             renderAll();
             if (showToastMsg) showToast(showToastMsg);
         }
@@ -703,7 +876,7 @@
             tripData = JSON.parse(JSON.stringify(DEFAULT_TRIP_DATA));
             currentCityFilter = "ALL";
             selectedDayNum = null;
-            saveTripData("已恢复为初始确定行程数据");
+            saveTripData("已恢复为初始确定行程与地图路线数据");
         }
 
         function showToast(msg) {
@@ -718,7 +891,7 @@
         }
 
         // ==========================================
-        // 3. 全局设置与自动计算核心逻辑
+        // 3. 全局设置与双向汇率自动计算核心逻辑
         // ==========================================
         function updateGlobalSettings() {
             const pax = parseInt(document.getElementById("globalPax").value) || 4;
@@ -729,7 +902,6 @@
             if (start) tripData.settings.startDate = start;
             if (end) tripData.settings.endDate = end;
 
-            // 如果修改了出发日期，顺延更新每日对应日期
             if (start) {
                 const baseDate = new Date(start + "T00:00:00");
                 const weekdays = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
@@ -748,18 +920,36 @@
         }
 
         function updateExchangeRate() {
-            const rate = parseFloat(document.getElementById("exchangeRateInput").value);
-            if (rate > 0) {
-                tripData.settings.exchangeRateJPYtoMYR = rate;
-                saveTripData("汇率已更新");
+            const inputEl = document.getElementById("exchangeRateInput");
+            const rate = parseFloat(inputEl.value);
+            if (!isNaN(rate) && rate > 0) {
+                tripData.settings.exchangeRate = rate;
+                localStorage.setItem("japan_4pax_trip_2027_v2", JSON.stringify(tripData));
+                renderAll();
+            }
+        }
+
+        // 统一双币折算辅助函数：无论原币是 MYR 还是 JPY，均实时算出最新的 MYR 与 JPY
+        function convertAmount(amount, currency, rate) {
+            const val = parseFloat(amount) || 0;
+            const safeRate = rate > 0 ? rate : 34.5;
+            if (currency === "JPY") {
+                return {
+                    myr: val / safeRate,
+                    jpy: val
+                };
+            } else {
+                return {
+                    myr: val,
+                    jpy: val * safeRate
+                };
             }
         }
 
         function calculateSummaryStats() {
             const pax = tripData.settings.pax || 4;
-            const rate = tripData.settings.exchangeRateJPYtoMYR || 3.0; // 100 JPY = rate MYR
+            const rate = tripData.settings.exchangeRate || 34.5; // 1 MYR = rate JPY
 
-            // 计算总晚数
             let totalHotelNights = 0;
             tripData.hotels.forEach(h => {
                 const d1 = new Date(h.checkIn);
@@ -768,7 +958,6 @@
                 if (diff > 0) totalHotelNights += diff;
             });
 
-            // 统计预订状态与金额
             let confirmedItems = 0;
             let totalItems = 0;
 
@@ -779,39 +968,39 @@
 
             tripData.hotels.forEach(h => {
                 totalItems++;
-                const cost = parseFloat(h.priceMYR) || 0;
+                const conv = convertAmount(h.price, h.currency || "MYR", rate);
                 if (h.status === "已预订") {
                     confirmedItems++;
-                    hotelConfirmedMYR += cost;
+                    hotelConfirmedMYR += conv.myr;
                 } else {
-                    hotelPendingMYR += cost;
+                    hotelPendingMYR += conv.myr;
                 }
             });
 
             tripData.transports.forEach(t => {
                 totalItems++;
-                const cost = parseFloat(t.costMYR) || 0;
+                const conv = convertAmount(t.cost, t.currency || "MYR", rate);
                 if (t.status === "已预订") {
                     confirmedItems++;
-                    transConfirmedMYR += cost;
+                    transConfirmedMYR += conv.myr;
                 } else {
-                    transPendingMYR += cost;
+                    transPendingMYR += conv.myr;
                 }
             });
 
             tripData.days.forEach(d => {
                 d.items.forEach(item => {
                     totalItems++;
-                    const cost = parseFloat(item.costMYR) || 0;
+                    const conv = convertAmount(item.cost, item.currency || "MYR", rate);
                     const isConfirmed = item.status === "已预订";
                     if (isConfirmed) confirmedItems++;
 
                     if (item.type.includes("餐食")) {
-                        isConfirmed ? (foodConfirmedMYR += cost) : (foodPendingMYR += cost);
+                        isConfirmed ? (foodConfirmedMYR += conv.myr) : (foodPendingMYR += conv.myr);
                     } else if (item.type.includes("交通")) {
-                        isConfirmed ? (transConfirmedMYR += cost) : (transPendingMYR += cost);
+                        isConfirmed ? (transConfirmedMYR += conv.myr) : (transPendingMYR += conv.myr);
                     } else {
-                        isConfirmed ? (spotConfirmedMYR += cost) : (spotPendingMYR += cost);
+                        isConfirmed ? (spotConfirmedMYR += conv.myr) : (spotPendingMYR += conv.myr);
                     }
                 });
             });
@@ -819,13 +1008,14 @@
             const totalConfirmedMYR = hotelConfirmedMYR + transConfirmedMYR + foodConfirmedMYR + spotConfirmedMYR;
             const totalPendingMYR = hotelPendingMYR + transPendingMYR + foodPendingMYR + spotPendingMYR;
             const grandTotalMYR = totalConfirmedMYR + totalPendingMYR;
-            const grandTotalJPY = Math.round((grandTotalMYR / rate) * 100);
+            const grandTotalJPY = Math.round(grandTotalMYR * rate);
 
             const perPersonMYR = grandTotalMYR / pax;
             const perPersonJPY = Math.round(grandTotalJPY / pax);
 
             return {
                 pax,
+                rate,
                 totalDays: tripData.days.length,
                 totalHotelNights,
                 confirmedItems,
@@ -836,7 +1026,9 @@
                 perPersonMYR,
                 perPersonJPY,
                 totalConfirmedMYR,
+                totalConfirmedJPY: Math.round(totalConfirmedMYR * rate),
                 totalPendingMYR,
+                totalPendingJPY: Math.round(totalPendingMYR * rate),
                 categories: {
                     hotel: hotelConfirmedMYR + hotelPendingMYR,
                     trans: transConfirmedMYR + transPendingMYR,
@@ -850,17 +1042,18 @@
         // 4. 界面渲染逻辑
         // ==========================================
         function renderAll() {
-            // 同步顶部输入控件值
             document.getElementById("globalPax").value = tripData.settings.pax;
             document.getElementById("globalStartDate").value = tripData.settings.startDate;
             document.getElementById("globalEndDate").value = tripData.settings.endDate;
-            document.getElementById("exchangeRateInput").value = tripData.settings.exchangeRateJPYtoMYR;
+            const rateInput = document.getElementById("exchangeRateInput");
+            if (document.activeElement !== rateInput) {
+                rateInput.value = tripData.settings.exchangeRate;
+            }
 
             const stats = calculateSummaryStats();
 
-            // 更新副标题与统计卡片
             document.getElementById("tripSubtitle").textContent =
-                `主代表：${tripData.settings.representative} ｜ ${stats.pax}人同行 ｜ ${tripData.settings.startDate} 至 ${tripData.settings.endDate}（阪进东出・二次元与和牛之旅）`;
+                `主代表：${tripData.settings.representative} ｜ ${stats.pax}人同行 ｜ ${tripData.settings.startDate} 至 ${tripData.settings.endDate}（汇率 1 MYR = ${stats.rate} JPY）`;
 
             document.getElementById("statDuration").textContent = `${stats.totalDays}天 ${stats.totalHotelNights}晚住宿`;
             document.getElementById("statBookingRatio").textContent = `${stats.confirmedItems} / ${stats.totalItems}`;
@@ -872,17 +1065,19 @@
             document.getElementById("statPerPersonJPY").textContent = `≈ ¥${stats.perPersonJPY.toLocaleString()} / 人`;
 
             renderDaySelector();
-            renderDailyItinerary();
-            renderHotels();
-            renderTransports();
+            renderDailyItinerary(stats.rate);
+            renderHotels(stats.rate);
+            renderMapRoutes();
+            renderTransports(stats.rate);
             renderBudget(stats);
         }
 
         function switchMainTab(tabName) {
-            const tabs = ["itinerary", "hotels", "transport", "budget"];
+            const tabs = ["itinerary", "hotels", "map", "transport", "budget"];
             tabs.forEach(t => {
                 const btn = document.getElementById(`tab-${t}`);
                 const view = document.getElementById(`view-${t}`);
+                if (!btn || !view) return;
                 if (t === tabName) {
                     btn.classList.add("tab-active");
                     btn.classList.remove("text-slate-600", "hover:bg-slate-100");
@@ -906,17 +1101,13 @@
                 }
             });
             renderDaySelector();
-            renderDailyItinerary();
+            renderDailyItinerary(tripData.settings.exchangeRate);
         }
 
         function selectSpecificDay(dayNum) {
-            if (selectedDayNum === dayNum) {
-                selectedDayNum = null; // 再次点击取消单日锁定，显示全部
-            } else {
-                selectedDayNum = dayNum;
-            }
+            selectedDayNum = selectedDayNum === dayNum ? null : dayNum;
             renderDaySelector();
-            renderDailyItinerary();
+            renderDailyItinerary(tripData.settings.exchangeRate);
         }
 
         function renderDaySelector() {
@@ -951,7 +1142,7 @@
             });
         }
 
-        function renderDailyItinerary() {
+        function renderDailyItinerary(rate) {
             const container = document.getElementById("dailyCardsContainer");
             container.innerHTML = "";
 
@@ -976,7 +1167,6 @@
                 const dayCard = document.createElement("div");
                 dayCard.className = "bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden";
 
-                // 卡片头部：支持内联切换城市与住宿备注
                 dayCard.innerHTML = `
                     <div class="bg-slate-50/80 px-5 py-4 border-b border-slate-200/80 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
                         <div>
@@ -1010,6 +1200,8 @@
                                 item.type.includes("餐食") ? "🥩" :
                                 item.type.includes("交通") ? "🚄" :
                                 item.type.includes("住宿") ? "🏨" : "🛍️";
+                            const conv = convertAmount(item.cost, item.currency || "MYR", rate);
+                            const mapSearchUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(day.city + " " + item.title)}`;
 
                             return `
                                 <div class="p-4 sm:px-5 hover:bg-slate-50/70 transition flex flex-col sm:flex-row sm:items-start justify-between gap-3">
@@ -1026,7 +1218,11 @@
                                                     class="text-[11px] font-semibold px-2 py-0.5 rounded-full border cursor-pointer transition ${statusClass}">
                                                     ${item.status === "已预订" ? "✅ 已预订" : "⏳ 待确认"}
                                                 </button>
-                                                ${item.costMYR > 0 ? `<span class="text-xs font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">4人预算: RM ${Number(item.costMYR).toFixed(0)}</span>` : ""}
+                                                ${conv.myr > 0 ? `<span class="text-xs font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md">4人: RM ${conv.myr.toFixed(0)} (¥${Math.round(conv.jpy).toLocaleString()})</span>` : ""}
+                                                <a href="${mapSearchUrl}" target="_blank" rel="noopener noreferrer"
+                                                    class="text-[11px] font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200/80 transition">
+                                                    📍 地图
+                                                </a>
                                             </div>
                                             <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">${item.note || "暂无备注"}</p>
                                         </div>
@@ -1069,7 +1265,7 @@
         // ==========================================
         // 5. 酒店模块渲染与编辑
         // ==========================================
-        function renderHotels() {
+        function renderHotels(rate) {
             const grid = document.getElementById("hotelsGrid");
             grid.innerHTML = "";
             const pax = tripData.settings.pax || 4;
@@ -1078,8 +1274,10 @@
                 const d1 = new Date(h.checkIn);
                 const d2 = new Date(h.checkOut);
                 const nights = Math.max(1, Math.round((d2 - d1) / (1000 * 60 * 60 * 24)));
-                const perPerson = (h.priceMYR / pax).toFixed(2);
+                const conv = convertAmount(h.price, h.currency || "MYR", rate);
+                const perPersonMYR = (conv.myr / pax).toFixed(2);
                 const statusClass = h.status === "已预订" ? "status-confirmed" : "status-pending";
+                const mapLink = h.mapUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(h.name)}`;
 
                 const card = document.createElement("div");
                 card.className = "bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex flex-col justify-between";
@@ -1101,8 +1299,8 @@
                             </div>
                             <div>
                                 <span class="text-slate-400 block">${pax}人总价 / 人均</span>
-                                <span class="font-bold text-rose-600">RM ${Number(h.priceMYR).toFixed(2)}</span>
-                                <span class="text-slate-500 block text-[11px]">(人均 RM ${perPerson})</span>
+                                <span class="font-bold text-rose-600">RM ${conv.myr.toFixed(2)}</span>
+                                <span class="text-slate-500 block text-[11px]">(¥${Math.round(conv.jpy).toLocaleString()} ｜ 人均 RM ${perPersonMYR})</span>
                             </div>
                         </div>
 
@@ -1111,13 +1309,19 @@
                         </p>
                     </div>
 
-                    <div class="flex items-center justify-end gap-2 mt-4 pt-3 border-t border-slate-100">
-                        <button onclick="openHotelModal(${idx})" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
-                            编辑酒店信息
-                        </button>
-                        <button onclick="deleteHotel(${idx})" class="text-xs font-medium px-2.5 py-1.5 rounded-lg text-rose-600 hover:bg-rose-50 transition">
-                            删除
-                        </button>
+                    <div class="flex items-center justify-between gap-2 mt-4 pt-3 border-t border-slate-100">
+                        <a href="${mapLink}" target="_blank" rel="noopener noreferrer"
+                            class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition">
+                            🗺️ 打开 Google 地图
+                        </a>
+                        <div class="flex items-center gap-1.5">
+                            <button onclick="openHotelModal(${idx})" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+                                编辑
+                            </button>
+                            <button onclick="deleteHotel(${idx})" class="text-xs font-medium px-2.5 py-1.5 rounded-lg text-rose-600 hover:bg-rose-50 transition">
+                                删除
+                            </button>
+                        </div>
                     </div>
                 `;
                 grid.appendChild(card);
@@ -1135,16 +1339,107 @@
         }
 
         // ==========================================
+        // 5.5 Google 地图与路线距离模块渲染与交互
+        // ==========================================
+        function renderMapRoutes() {
+            const container = document.getElementById("mapRoutesContainer");
+            if (!container) return;
+            container.innerHTML = "";
+
+            tripData.mapRoutes.forEach((route, idx) => {
+                const card = document.createElement("div");
+                card.className = "bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex flex-col justify-between";
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between gap-2 mb-3">
+                            <span class="text-xs font-bold px-2.5 py-1 rounded-lg bg-rose-100 text-rose-800">${route.badge}</span>
+                            <span class="text-xs font-bold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800">📏 ${route.distance}</span>
+                        </div>
+                        <div class="space-y-1.5">
+                            <div class="text-xs text-slate-500">起点：<strong class="text-slate-800">${route.origin}</strong></div>
+                            <div class="text-xs text-slate-500">终点：<strong class="text-slate-800">${route.destination}</strong></div>
+                        </div>
+                        <div class="mt-3 flex flex-wrap gap-2 text-xs">
+                            <span class="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-semibold">⏱️ ${route.duration}</span>
+                            <span class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 font-semibold">🚆 ${route.mode}</span>
+                        </div>
+                        <p class="text-xs text-slate-600 mt-3 leading-relaxed bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                            ${route.note}
+                        </p>
+                    </div>
+                    <div class="flex items-center justify-between gap-2 mt-4 pt-3 border-t border-slate-100">
+                        <a href="${route.url}" target="_blank" rel="noopener noreferrer"
+                            class="inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition shadow-sm">
+                            🧭 在 Google Maps 查看完整路线
+                        </a>
+                        ${idx >= 4 ? `<button onclick="deleteMapRoute(${idx})" class="text-xs text-rose-600 hover:bg-rose-50 px-2.5 py-1.5 rounded-lg">删除</button>` : ""}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function openCustomGoogleMaps() {
+            const origin = document.getElementById("customMapOrigin").value.trim();
+            const dest = document.getElementById("customMapDest").value.trim();
+            if (!origin || !dest) {
+                showToast("请输入起点和终点名称");
+                return;
+            }
+            const url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(dest)}&travelmode=transit`;
+            window.open(url, "_blank", "noopener,noreferrer");
+        }
+
+        function saveCustomRouteToList() {
+            const origin = document.getElementById("customMapOrigin").value.trim();
+            const dest = document.getElementById("customMapDest").value.trim();
+            const note = document.getElementById("customMapNote").value.trim();
+            if (!origin || !dest) {
+                showToast("请先填写起点和终点");
+                return;
+            }
+            const url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(dest)}&travelmode=transit`;
+            tripData.mapRoutes.push({
+                id: "r_" + Date.now(),
+                badge: "自定义路线",
+                origin: origin,
+                destination: dest,
+                distance: note || "点击下方在地图查看实时距离",
+                duration: "公共交通导航",
+                mode: "Google Maps 实时路线",
+                url: url,
+                note: note || `从 ${origin} 前往 ${dest} 的导航路线。`
+            });
+            document.getElementById("customMapOrigin").value = "";
+            document.getElementById("customMapDest").value = "";
+            document.getElementById("customMapNote").value = "";
+            saveTripData("已将自定义路线保存到列表");
+        }
+
+        function deleteMapRoute(idx) {
+            tripData.mapRoutes.splice(idx, 1);
+            saveTripData("已删除自定义路线");
+        }
+
+        function switchMapEmbed(query) {
+            const iframe = document.getElementById("googleMapIframe");
+            if (iframe) {
+                iframe.src = `https://maps.google.com/maps?q=${encodeURIComponent(query)}&output=embed`;
+            }
+        }
+
+        // ==========================================
         // 6. 交通模块渲染与编辑
         // ==========================================
-        function renderTransports() {
+        function renderTransports(rate) {
             const list = document.getElementById("transportList");
             list.innerHTML = "";
             const pax = tripData.settings.pax || 4;
 
             tripData.transports.forEach((t, idx) => {
                 const statusClass = t.status === "已预订" ? "status-confirmed" : "status-pending";
-                const perPerson = (t.costMYR / pax).toFixed(2);
+                const conv = convertAmount(t.cost, t.currency || "MYR", rate);
+                const perPersonMYR = (conv.myr / pax).toFixed(2);
 
                 const row = document.createElement("div");
                 row.className = "bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4";
@@ -1165,8 +1460,8 @@
 
                     <div class="flex sm:flex-col items-center sm:items-end justify-between gap-2 border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100 flex-shrink-0">
                         <div class="text-left sm:text-right">
-                            <div class="text-sm font-bold text-slate-900">RM ${Number(t.costMYR).toFixed(2)} <span class="text-xs font-normal text-slate-500">(${pax}人)</span></div>
-                            <div class="text-xs text-slate-500">人均 RM ${perPerson}</div>
+                            <div class="text-sm font-bold text-slate-900">RM ${conv.myr.toFixed(2)} <span class="text-xs font-normal text-slate-500">(¥${Math.round(conv.jpy).toLocaleString()})</span></div>
+                            <div class="text-xs text-slate-500">人均 RM ${perPersonMYR} (¥${Math.round(conv.jpy / pax).toLocaleString()})</div>
                         </div>
                         <div class="flex items-center gap-2">
                             <button onclick="openTransportModal(${idx})" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700">编辑</button>
@@ -1189,12 +1484,43 @@
         }
 
         // ==========================================
-        // 7. 预算中心渲染
+        // 7. 预算中心渲染与内联实时金额编辑
         // ==========================================
+        function updateInlineBudgetAmount(sourceType, idx1, idx2, newVal) {
+            const val = parseFloat(newVal);
+            if (isNaN(val) || val < 0) return;
+
+            if (sourceType === "hotel") {
+                tripData.hotels[idx1].price = val;
+            } else if (sourceType === "transport") {
+                tripData.transports[idx1].cost = val;
+            } else if (sourceType === "activity") {
+                tripData.days[idx1].items[idx2].cost = val;
+            }
+            localStorage.setItem("japan_4pax_trip_2027_v2", JSON.stringify(tripData));
+            renderAll();
+        }
+
+        function updateInlineBudgetCurrency(sourceType, idx1, idx2, newCurr) {
+            if (sourceType === "hotel") {
+                tripData.hotels[idx1].currency = newCurr;
+            } else if (sourceType === "transport") {
+                tripData.transports[idx1].currency = newCurr;
+            } else if (sourceType === "activity") {
+                tripData.days[idx1].items[idx2].currency = newCurr;
+            }
+            saveTripData("币种已切换并重新折算");
+        }
+
         function renderBudget(stats) {
             const pax = stats.pax;
-            document.getElementById("budgetConfirmedSummary").textContent = `已确认支出：RM ${stats.totalConfirmedMYR.toFixed(2)}`;
-            document.getElementById("budgetPendingSummary").textContent = `待确认预估：RM ${stats.totalPendingMYR.toFixed(2)}`;
+            const rate = stats.rate;
+
+            document.getElementById("budgetTablePax").textContent = pax;
+            document.getElementById("budgetConfirmedSummary").textContent =
+                `已预订支出：RM ${stats.totalConfirmedMYR.toFixed(2)} (¥${stats.totalConfirmedJPY.toLocaleString()})`;
+            document.getElementById("budgetPendingSummary").textContent =
+                `待确认预估：RM ${stats.totalPendingMYR.toFixed(2)} (¥${stats.totalPendingJPY.toLocaleString()})`;
 
             const catContainer = document.getElementById("budgetCategoryBars");
             const cats = [
@@ -1206,6 +1532,7 @@
 
             catContainer.innerHTML = cats.map(c => {
                 const pct = stats.grandTotalMYR > 0 ? Math.round((c.val / stats.grandTotalMYR) * 100) : 0;
+                const catJPY = Math.round(c.val * rate);
                 return `
                     <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80">
                         <div class="flex justify-between text-xs font-semibold text-slate-600">
@@ -1213,7 +1540,7 @@
                             <span>${pct}%</span>
                         </div>
                         <div class="text-base font-bold text-slate-900 mt-1">RM ${c.val.toFixed(2)}</div>
-                        <div class="text-[11px] text-slate-500 mb-2">人均 RM ${(c.val / pax).toFixed(2)}</div>
+                        <div class="text-[11px] text-slate-500 mb-2">≈ ¥${catJPY.toLocaleString()} ｜ 人均 RM ${(c.val / pax).toFixed(2)}</div>
                         <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
                             <div class="${c.color} h-1.5 rounded-full" style="width: ${pct}%"></div>
                         </div>
@@ -1221,39 +1548,78 @@
                 `;
             }).join("");
 
-            // 汇总所有带金额的项目
             const tbody = document.getElementById("budgetTableBody");
             const rows = [];
 
-            tripData.hotels.forEach(h => {
-                rows.push({ cat: "🏨 住宿", name: `${h.city} - ${h.name}`, status: h.status, cost: Number(h.priceMYR) });
+            tripData.hotels.forEach((h, idx) => {
+                rows.push({
+                    sourceType: "hotel", idx1: idx, idx2: -1,
+                    cat: "🏨 住宿",
+                    name: `${h.city} - ${h.name}`,
+                    status: h.status,
+                    currency: h.currency || "MYR",
+                    rawAmount: Number(h.price) || 0
+                });
             });
-            tripData.transports.forEach(t => {
-                if (Number(t.costMYR) > 0) {
-                    rows.push({ cat: "🚄 交通", name: t.title, status: t.status, cost: Number(t.costMYR) });
-                }
+            tripData.transports.forEach((t, idx) => {
+                rows.push({
+                    sourceType: "transport", idx1: idx, idx2: -1,
+                    cat: "🚄 交通",
+                    name: t.title,
+                    status: t.status,
+                    currency: t.currency || "MYR",
+                    rawAmount: Number(t.cost) || 0
+                });
             });
-            tripData.days.forEach(d => {
-                d.items.forEach(i => {
-                    if (Number(i.costMYR) > 0) {
-                        rows.push({ cat: i.type, name: `Day ${d.dayNum} (${d.city}) - ${i.title}`, status: i.status, cost: Number(i.costMYR) });
+            tripData.days.forEach((d, dIdx) => {
+                d.items.forEach((i, iIdx) => {
+                    if (Number(i.cost) > 0) {
+                        rows.push({
+                            sourceType: "activity", idx1: dIdx, idx2: iIdx,
+                            cat: i.type,
+                            name: `Day ${d.dayNum} (${d.city}) - ${i.title}`,
+                            status: i.status,
+                            currency: i.currency || "MYR",
+                            rawAmount: Number(i.cost) || 0
+                        });
                     }
                 });
             });
 
-            tbody.innerHTML = rows.map(r => `
-                <tr class="hover:bg-slate-50">
-                    <td class="py-2.5 px-3 text-xs font-semibold text-slate-600">${r.cat}</td>
-                    <td class="py-2.5 px-3 font-medium text-slate-900">${r.name}</td>
-                    <td class="py-2.5 px-3">
-                        <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full border ${r.status === "已预订" ? "status-confirmed" : "status-pending"}">
-                            ${r.status}
-                        </span>
-                    </td>
-                    <td class="py-2.5 px-3 text-right font-semibold text-slate-900">RM ${r.cost.toFixed(2)}</td>
-                    <td class="py-2.5 px-3 text-right text-slate-600">RM ${(r.cost / pax).toFixed(2)}</td>
-                </tr>
-            `).join("");
+            tbody.innerHTML = rows.map(r => {
+                const conv = convertAmount(r.rawAmount, r.currency, rate);
+                return `
+                    <tr class="hover:bg-slate-50">
+                        <td class="py-2.5 px-3 text-xs font-semibold text-slate-600 whitespace-nowrap">${r.cat}</td>
+                        <td class="py-2.5 px-3 font-medium text-slate-900">${r.name}</td>
+                        <td class="py-2.5 px-3 whitespace-nowrap">
+                            <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full border ${r.status === "已预订" ? "status-confirmed" : "status-pending"}">
+                                ${r.status}
+                            </span>
+                        </td>
+                        <td class="py-2.5 px-3 text-right whitespace-nowrap">
+                            <div class="inline-flex items-center gap-1">
+                                <select onchange="updateInlineBudgetCurrency('${r.sourceType}', ${r.idx1}, ${r.idx2}, this.value)"
+                                    class="text-xs border border-slate-300 rounded px-1.5 py-1 bg-white font-semibold text-slate-700">
+                                    <option value="MYR" ${r.currency === "MYR" ? "selected" : ""}>MYR</option>
+                                    <option value="JPY" ${r.currency === "JPY" ? "selected" : ""}>JPY</option>
+                                </select>
+                                <input type="number" step="0.01" min="0" value="${r.rawAmount}"
+                                    onchange="updateInlineBudgetAmount('${r.sourceType}', ${r.idx1}, ${r.idx2}, this.value)"
+                                    class="w-24 text-right text-xs font-semibold border border-slate-300 rounded px-2 py-1 bg-white focus:ring-2 focus:ring-rose-500 focus:outline-none">
+                            </div>
+                        </td>
+                        <td class="py-2.5 px-3 text-right whitespace-nowrap">
+                            <div class="font-bold text-slate-900">RM ${conv.myr.toFixed(2)}</div>
+                            <div class="text-xs text-slate-500">¥${Math.round(conv.jpy).toLocaleString()}</div>
+                        </td>
+                        <td class="py-2.5 px-3 text-right whitespace-nowrap">
+                            <div class="font-semibold text-rose-600">RM ${(conv.myr / pax).toFixed(2)}</div>
+                            <div class="text-xs text-slate-500">¥${Math.round(conv.jpy / pax).toLocaleString()}</div>
+                        </td>
+                    </tr>
+                `;
+            }).join("");
         }
 
         // ==========================================
@@ -1284,7 +1650,8 @@
                 document.getElementById("actStatus").value = item.status;
                 document.getElementById("actTitle").value = item.title;
                 document.getElementById("actNote").value = item.note;
-                document.getElementById("actCostMYR").value = item.costMYR || 0;
+                document.getElementById("actCurrency").value = item.currency || "MYR";
+                document.getElementById("actCost").value = item.cost || 0;
             } else {
                 document.getElementById("activityModalTitle").textContent = "新增行程 / 餐食节点";
                 document.getElementById("actTime").value = "15:00";
@@ -1292,7 +1659,8 @@
                 document.getElementById("actStatus").value = "待确认";
                 document.getElementById("actTitle").value = "";
                 document.getElementById("actNote").value = "";
-                document.getElementById("actCostMYR").value = 0;
+                document.getElementById("actCurrency").value = "JPY";
+                document.getElementById("actCost").value = 0;
             }
 
             modal.classList.remove("hidden");
@@ -1311,7 +1679,8 @@
                 status: document.getElementById("actStatus").value,
                 title: document.getElementById("actTitle").value.trim(),
                 note: document.getElementById("actNote").value.trim(),
-                costMYR: parseFloat(document.getElementById("actCostMYR").value) || 0
+                currency: document.getElementById("actCurrency").value,
+                cost: parseFloat(document.getElementById("actCost").value) || 0
             };
 
             if (itemIdx >= 0) {
@@ -1342,7 +1711,9 @@
                 document.getElementById("hotelCheckIn").value = h.checkIn;
                 document.getElementById("hotelCheckOut").value = h.checkOut;
                 document.getElementById("hotelRoom").value = h.room;
-                document.getElementById("hotelPriceMYR").value = h.priceMYR;
+                document.getElementById("hotelCurrency").value = h.currency || "MYR";
+                document.getElementById("hotelPrice").value = h.price;
+                document.getElementById("hotelMapUrl").value = h.mapUrl || "";
                 document.getElementById("hotelNotes").value = h.notes;
             } else {
                 document.getElementById("hotelModalTitle").textContent = "新增住宿记录";
@@ -1352,7 +1723,9 @@
                 document.getElementById("hotelCheckIn").value = "2027-01-23";
                 document.getElementById("hotelCheckOut").value = "2027-01-27";
                 document.getElementById("hotelRoom").value = "四人房・1间";
-                document.getElementById("hotelPriceMYR").value = 0;
+                document.getElementById("hotelCurrency").value = "MYR";
+                document.getElementById("hotelPrice").value = 0;
+                document.getElementById("hotelMapUrl").value = "";
                 document.getElementById("hotelNotes").value = "";
             }
 
@@ -1371,7 +1744,9 @@
                 checkIn: document.getElementById("hotelCheckIn").value,
                 checkOut: document.getElementById("hotelCheckOut").value,
                 room: document.getElementById("hotelRoom").value.trim(),
-                priceMYR: parseFloat(document.getElementById("hotelPriceMYR").value) || 0,
+                currency: document.getElementById("hotelCurrency").value,
+                price: parseFloat(document.getElementById("hotelPrice").value) || 0,
+                mapUrl: document.getElementById("hotelMapUrl").value.trim(),
                 notes: document.getElementById("hotelNotes").value.trim()
             };
 
@@ -1396,7 +1771,8 @@
                 document.getElementById("transStatus").value = t.status;
                 document.getElementById("transTitle").value = t.title;
                 document.getElementById("transRoute").value = t.route;
-                document.getElementById("transCostMYR").value = t.costMYR;
+                document.getElementById("transCurrency").value = t.currency || "MYR";
+                document.getElementById("transCost").value = t.cost;
                 document.getElementById("transNotes").value = t.notes;
             } else {
                 document.getElementById("transportModalTitle").textContent = "新增交通与票券";
@@ -1404,7 +1780,8 @@
                 document.getElementById("transStatus").value = "待确认";
                 document.getElementById("transTitle").value = "";
                 document.getElementById("transRoute").value = "";
-                document.getElementById("transCostMYR").value = 0;
+                document.getElementById("transCurrency").value = "JPY";
+                document.getElementById("transCost").value = 0;
                 document.getElementById("transNotes").value = "";
             }
 
@@ -1421,7 +1798,8 @@
                 status: document.getElementById("transStatus").value,
                 title: document.getElementById("transTitle").value.trim(),
                 route: document.getElementById("transRoute").value.trim(),
-                costMYR: parseFloat(document.getElementById("transCostMYR").value) || 0,
+                currency: document.getElementById("transCurrency").value,
+                cost: parseFloat(document.getElementById("transCost").value) || 0,
                 notes: document.getElementById("transNotes").value.trim()
             };
 
