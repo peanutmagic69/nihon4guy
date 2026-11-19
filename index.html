@@ -485,7 +485,7 @@
                 <button onclick="closeModal('transportModal')" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
             </div>
             <form id="transportForm" onsubmit="saveTransport(event)" class="space-y-4 mt-4">
-                <input type="hidden" id="transportIndex">
+                <input type="hidden" id="transIndex">
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">日期</label>
@@ -509,7 +509,7 @@
                         <input type="text" id="transRoute" placeholder="例如：京都站 → 东京站/新宿" required class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">总费用 & 币种</label>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">4人总费用 & 币种</label>
                         <div class="flex gap-1.5">
                             <select id="transCurrency" class="text-xs border border-slate-300 rounded-xl px-2 py-2 bg-slate-50 font-semibold">
                                 <option value="MYR">MYR</option>
@@ -518,16 +518,6 @@
                             <input type="number" id="transCost" step="0.01" min="0" required class="w-full text-sm border border-slate-300 rounded-xl px-3 py-2">
                         </div>
                     </div>
-                </div>
-                <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                    <label class="block text-xs font-semibold text-slate-700 mb-2">分摊人数（勾选需要分摊的旅客）</label>
-                    <div class="grid grid-cols-2 gap-2 text-sm" id="transPaxChoices">
-                        <label class="flex items-center gap-2"><input type="checkbox" class="trans-pax" value="1" checked> 旅客 1</label>
-                        <label class="flex items-center gap-2"><input type="checkbox" class="trans-pax" value="2" checked> 旅客 2</label>
-                        <label class="flex items-center gap-2"><input type="checkbox" class="trans-pax" value="3" checked> 旅客 3</label>
-                        <label class="flex items-center gap-2"><input type="checkbox" class="trans-pax" value="4" checked> 旅客 4</label>
-                    </div>
-                    <div class="mt-2 text-xs text-slate-600" id="transSharePreview">选择人数后自动计算每人分摊。</div>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">行李/换乘/购票备注</label>
@@ -548,7 +538,7 @@
 
     <script>
         // ==========================================
-        // 1. 初始默认行程数据 (围绕已确定的 2027年1月行程)
+        // 1. 初始默认行程数据 (包含更新后的 Klook 富士山 5折套餐与集合详情)
         // ==========================================
         const DEFAULT_TRIP_DATA = {
             settings: {
@@ -589,7 +579,7 @@
                     distance: "约 469 公里",
                     duration: "夜巴移动约 7 小时 46 分钟（不含新干线）",
                     mode: "京都站八条口 → 东京跨夜巴士",
-                    url: "https://www.google.com/maps/dir/Hotel+Ecclesia,+23-23+%E8%A5%BF%E3%83%8E%E4%BA%AC%E6%B0%B8%E6%9C%AC%E7%94%BA,+%E4%B8%AD%E4%BA%AC%E5%8C%BA+%E4%BA%AC%E9%83%BD%E5%B8%82+%E4%BA%AC%E9%83%BD%E5%BA%9C,+Japan/%E6%97%A5%E6%9C%AC,+%E6%9D%B1%E4%BA%AC%E9%83%BD%E5%8F%B0%E6%9D%B1%E5%8C%BA%E6%B5%85%E8%8D%89%EF%BC%96%E4%B8%81%E7%9B%AE%EF%BC%93%EF%BC%90%E2%88%9211,+New+City+Hotel+%E6%96%B0%E5%9F%8E%E3%83%9B%E3%83%86%E3%83%AB/data=!4m14!4m13!1m5!1m1!19sChIJ38BBF5wHAWARLw1whCnUXEQ!2m2!1d135.7379526!2d35.0112357!1m5!1m1!19sChIJ6QepQ3yPGGARvRtlDiYIo4k!2m2!1d139.799817!2d35.718574!3e3?entry=gemini&utm_source=gemini&utm_campaign=gem-default",
+                    url: "https://www.google.com/maps/dir/Hotel+Ecclesia,+23-23+%E8%A5%BF%E3%83%8E%E4%BA%AC%E6%B0%B8%E6%9C%AC%E7%94%BA,+%E4%B8%AD%E4%BA%AC%E5%8C%BA+%E4%BA%AC%E9%83%BD%E5%B8%82+%E4%BA%AC%E9%83%BD%E5%BA%9C,+Japan/%E6%97%A5%E6%9C%AC,+%E6%9D%B1%E4%BA%AC%E9%83%BD%E5%8F%B0%E6%9D%89%E5%8C%BA%E6%B5%85%E8%8D%89%EF%BC%96%E4%B8%81%E7%9B%AE%EF%BC%93%EF%BC%90%E2%88%9211,+New+City+Hotel+%E6%96%B0%E5%9F%8E%E3%83%9B%E3%83%86%E3%83%AB/data=!4m14!4m13!1m5!1m1!19sChIJ38BBF5wHAWARLw1whCnUXEQ!2m2!1d135.7379526!2d35.0112357!1m5!1m1!19sChIJ6QepQ3yPGGARvRtlDiYIo4k!2m2!1d139.799817!2d35.718574!3e3?entry=gemini&utm_source=gemini&utm_campaign=gem-default",
                     note: "1 月 22 日晚间由京都站八条口出发，省去一晚住宿费并直达东京。"
                 },
                 {
@@ -600,7 +590,7 @@
                     distance: "约 66.5 公里",
                     duration: "一车直达约 52–55 分钟",
                     mode: "都营浅草线直通京成Access特急",
-                    url: "https://www.google.com/maps/dir/%E6%97%A5%E6%9C%AC,+%E6%9D%B1%E4%BA%AC%E9%83%BD%E5%8F%B0%E6%9D%B1%E5%8C%BA%E6%B5%85%E8%8D%89%EF%BC%96%E4%B8%81%E7%9B%AE%EF%BC%93%EF%BC%90%E2%88%9211,+New+City+Hotel+%E6%96%B0%E5%9F%8E%E3%83%9B%E3%83%86%E3%83%AB/%E6%97%A5%E6%9C%AC,+%E5%8D%83%E8%91%89%E7%9C%8C%E6%88%90%E7%94%B0%E5%B8%82%E5%8F%A4%E8%BE%BC1-1,+%E6%88%90%E7%94%B0%E5%9B%BD%E9%99%85%E6%9C%BA%E5%9C%BA/data=!4m14!4m13!1m5!1m1!19sChIJ6QepQ3yPGGARvRtlDiYIo4k!2m2!1d139.799817!2d35.718574!1m5!1m1!19sChIJVze90XnzImARoRp3YqEpbtU!2m2!1d140.3843215!2d35.770178!3e3?entry=gemini&utm_source=gemini&utm_campaign=gem-default",
+                    url: "https://www.google.com/maps/dir/%E6%97%A5%E6%9C%AC,+%E6%9D%B1%E4%BA%AC%E9%83%BD%E5%8F%B0%E6%9D%89%E5%8C%BA%E6%B5%85%E8%8D%89%EF%BC%96%E4%B8%81%E7%9B%AE%EF%BC%93%EF%BC%90%E2%88%9211,+New+City+Hotel+%E6%96%B0%E5%9F%8E%E3%83%9B%E3%83%86%E3%83%AB/%E6%97%A5%E6%9C%AC,+%E5%8D%83%E8%91%89%E7%9C%8C%E6%88%90%E7%94%B0%E5%B8%82%E5%8F%A4%E8%BE%BC1-1,+%E6%88%90%E7%94%B0%E5%9B%BD%E9%99%85%E6%9C%BA%E5%9C%BA/data=!4m14!4m13!1m5!1m1!19sChIJ6QepQ3yPGGARvRtlDiYIo4k!2m2!1d139.799817!2d35.718574!1m5!1m1!19sChIJVze90XnzImARoRp3YqEpbtU!2m2!1d140.3843215!2d35.770178!3e3?entry=gemini&utm_source=gemini&utm_campaign=gem-default",
                     note: "4 人携带满载手办的 30kg 大行李箱无需在车站换乘，浅草站上车直达航站楼！"
                 }
             ],
@@ -688,6 +678,16 @@
                 },
                 {
                     id: "t5",
+                    date: "2027-01-25",
+                    title: "Klook 富士山一日游 (5折优惠套餐｜含金鸟居与日川时计店)",
+                    route: "JR东京站丸之内北口集合 ⇄ 富士山河口湖",
+                    currency: "MYR",
+                    cost: 401.20,
+                    status: "待确认",
+                    notes: "07:45 JR东京站丸之内北口集合，08:00发车。4人合计 RM 401.20 (约 ¥13,841 JPY)，含往返大巴与中文导游[cite: 2]。"
+                },
+                {
+                    id: "t6",
                     date: "2027-01-27 返程日",
                     title: "浅草 → 成田机场 直达电车 (都营浅草线直通京成Access特急)",
                     route: "浅草站 → 成田国际机场 NRT (约66.5km)",
@@ -697,7 +697,7 @@
                     notes: "无需转车！确认列车方向为【成田空港行 (Access Express)】，约52-55分钟直达，4人每人约 1,370 JPY。"
                 },
                 {
-                    id: "t6",
+                    id: "t7",
                     date: "2027-01-27 返程",
                     title: "回程国际航班 (东京成田 NRT → 吉隆坡 KUL)",
                     route: "NRT → KUL",
@@ -820,10 +820,15 @@
                     weekday: "周一",
                     city: "东京",
                     stayHotel: "新城塚居酒店 (浅草 301房)",
-                    summary: "河口湖富士山一日游 或 中野百老汇中古淘货 + 涩谷 PARCO",
+                    summary: "Klook 富士山经典打卡一日游 (东京站丸之内北口 07:45 集合出发)",
                     items: [
-                        { time: "09:00", type: "景点/逛街", title: "备选A：富士山河口湖一日游 / 备选B：中野百老汇中古淘货", status: "待确认", currency: "JPY", cost: 20000, note: "若天气晴朗强烈推荐去河口湖看冬季雪顶富士山；若专注动漫怀旧手办则去中野百老汇（Nakano Broadway）。" },
-                        { time: "17:00", type: "景点/逛街", title: "涩谷 PARCO (Nintendo TOKYO / CAPCOM / JUMP SHOP) & 十字路口", status: "待确认", currency: "JPY", cost: 11000, note: "涩谷PARCO 6楼是游戏动漫官方店集合地，非常适合补齐限定商品。" }
+                        { time: "06:50", type: "交通/移动", title: "从浅草酒店出发前往 JR东京站", status: "待确认", currency: "JPY", cost: 0, note: "步行至浅草站搭银座线 ➔ 神田站转 JR 山手线/京滨东北线 ➔ 东京站（约37分钟，7:30前避开早高峰）。" },
+                        { time: "07:45", type: "交通/移动", title: "JR东京站丸之内北口集合，导游举牌签到", status: "待确认", currency: "MYR", cost: 401.20, note: "Klook 5折优惠套餐（含往返大巴与中文导游）[cite: 2]。08:00准时发车！" },
+                        { time: "10:30", type: "景点/逛街", title: "金鸟居大门 + FabCafe Fuji 咖啡厅小憩 (1小时)", status: "待确认", currency: "JPY", cost: 2000, note: "青铜鸟居正对雪山，平地步行拍照极其出片，顺路在文青木质咖啡馆歇脚[cite: 2]。" },
+                        { time: "11:45", type: "景点/逛街", title: "日川时计店 (天梯小镇) 20分钟打卡", status: "待确认", currency: "JPY", cost: 0, note: "拍摄日式街道尽头直通富士山的经典人文机位[cite: 1]。" },
+                        { time: "13:00", type: "景点/逛街", title: "忍野八海 & 富士山融雪清泉村落 (午餐自由安排)", status: "待确认", currency: "JPY", cost: 4000, note: "品尝现烤草饼与豆腐小吃，欣赏八处清澈见底的雪水池。" },
+                        { time: "15:00", type: "景点/逛街", title: "河口湖大石公园 & 罗森便利店网红打卡点", status: "待确认", currency: "JPY", cost: 2000, note: "欣赏冬季河口湖畔与富士山倒影，购买富士山限定手信。" },
+                        { time: "18:30", type: "餐食/烤肉", title: "返抵 JR东京站解散 & 浅草晚餐", status: "待确认", currency: "JPY", cost: 6000, note: "返回浅草新城塚居酒店附近享用晚餐，早点休息。" }
                     ]
                 },
                 {
@@ -886,7 +891,7 @@
             tripData = JSON.parse(JSON.stringify(DEFAULT_TRIP_DATA));
             currentCityFilter = "ALL";
             selectedDayNum = null;
-            saveTripData("已恢复为初始确定行程与地图路线数据");
+            saveTripData("已恢复为包含Klook富士山5折套餐的默认数据");
         }
 
         function showToast(msg) {
@@ -939,7 +944,6 @@
             }
         }
 
-        // 统一双币折算辅助函数：无论原币是 MYR 还是 JPY，均实时算出最新的 MYR 与 JPY
         function convertAmount(amount, currency, rate) {
             const val = parseFloat(amount) || 0;
             const safeRate = rate > 0 ? rate : 34.5;
@@ -958,7 +962,7 @@
 
         function calculateSummaryStats() {
             const pax = tripData.settings.pax || 4;
-            const rate = tripData.settings.exchangeRate || 34.5; // 1 MYR = rate JPY
+            const rate = tripData.settings.exchangeRate || 34.5;
 
             let totalHotelNights = 0;
             tripData.hotels.forEach(h => {
@@ -1449,8 +1453,7 @@
             tripData.transports.forEach((t, idx) => {
                 const statusClass = t.status === "已预订" ? "status-confirmed" : "status-pending";
                 const conv = convertAmount(t.cost, t.currency || "MYR", rate);
-                const selectedPax = Array.isArray(t.pax) && t.pax.length ? t.pax.length : pax;
-                const perPersonMYR = (conv.myr / selectedPax).toFixed(2);
+                const perPersonMYR = (conv.myr / pax).toFixed(2);
 
                 const row = document.createElement("div");
                 row.className = "bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4";
@@ -1472,7 +1475,7 @@
                     <div class="flex sm:flex-col items-center sm:items-end justify-between gap-2 border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100 flex-shrink-0">
                         <div class="text-left sm:text-right">
                             <div class="text-sm font-bold text-slate-900">RM ${conv.myr.toFixed(2)} <span class="text-xs font-normal text-slate-500">(¥${Math.round(conv.jpy).toLocaleString()})</span></div>
-                            <div class="text-xs text-slate-500">${selectedPax}人分摊 · 人均 RM ${perPersonMYR} (¥${Math.round(conv.jpy / selectedPax).toLocaleString()})</div>
+                            <div class="text-xs text-slate-500">人均 RM ${perPersonMYR} (¥${Math.round(conv.jpy / pax).toLocaleString()})</div>
                         </div>
                         <div class="flex items-center gap-2">
                             <button onclick="openTransportModal(${idx})" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700">编辑</button>
@@ -1771,24 +1774,6 @@
             saveTripData("酒店住宿信息已更新");
         }
 
-        function getSelectedTransportPax() {
-            return Array.from(document.querySelectorAll(".trans-pax:checked")).map(el => Number(el.value));
-        }
-
-        function updateTransportSharePreview() {
-            const amount = parseFloat(document.getElementById("transCost").value) || 0;
-            const currency = document.getElementById("transCurrency").value;
-            const selected = getSelectedTransportPax();
-            const preview = document.getElementById("transSharePreview");
-            if (!selected.length) { preview.textContent = "请至少选择 1 位分摊旅客。"; return; }
-            preview.textContent = `共 ${selected.length} 人分摊 · 每人 ${currency} ${(amount / selected.length).toFixed(2)}`;
-        }
-
-        function setTransportPaxSelection(selected) {
-            document.querySelectorAll(".trans-pax").forEach(el => { el.checked = selected.includes(Number(el.value)); });
-            updateTransportSharePreview();
-        }
-
         function openTransportModal(idx = -1) {
             const modal = document.getElementById("transportModal");
             document.getElementById("transportIndex").value = idx;
@@ -1803,7 +1788,6 @@
                 document.getElementById("transCurrency").value = t.currency || "MYR";
                 document.getElementById("transCost").value = t.cost;
                 document.getElementById("transNotes").value = t.notes;
-                setTransportPaxSelection(Array.isArray(t.pax) && t.pax.length ? t.pax : [1,2,3,4]);
             } else {
                 document.getElementById("transportModalTitle").textContent = "新增交通与票券";
                 document.getElementById("transDate").value = "2027-01-23";
@@ -1813,10 +1797,8 @@
                 document.getElementById("transCurrency").value = "JPY";
                 document.getElementById("transCost").value = 0;
                 document.getElementById("transNotes").value = "";
-                setTransportPaxSelection([1,2,3,4]);
             }
 
-            updateTransportSharePreview();
             modal.classList.remove("hidden");
             modal.classList.add("flex");
         }
@@ -1832,10 +1814,8 @@
                 route: document.getElementById("transRoute").value.trim(),
                 currency: document.getElementById("transCurrency").value,
                 cost: parseFloat(document.getElementById("transCost").value) || 0,
-                notes: document.getElementById("transNotes").value.trim(),
-                pax: getSelectedTransportPax()
+                notes: document.getElementById("transNotes").value.trim()
             };
-            if (!transObj.pax.length) { showToast("请至少选择 1 位分摊旅客"); return; }
 
             if (idx >= 0) {
                 tripData.transports[idx] = transObj;
@@ -1846,10 +1826,6 @@
             closeModal("transportModal");
             saveTripData("交通与票券记录已更新");
         }
-
-        // 交通分摊实时预览
-        document.addEventListener("input", (e) => { if (e.target.matches("#transCost")) updateTransportSharePreview(); });
-        document.addEventListener("change", (e) => { if (e.target.matches("#transCurrency, .trans-pax")) updateTransportSharePreview(); });
 
         // 初始化渲染
         window.onload = function() {
